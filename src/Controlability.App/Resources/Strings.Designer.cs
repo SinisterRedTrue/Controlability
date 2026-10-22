@@ -418,5 +418,63 @@ public static class Strings
 
     public static string TabKeyboardOnly => Get(nameof(TabKeyboardOnly));
 
+    public static string TabExtras => Get(nameof(TabExtras));
+
+    public static string ExtrasGyroTitle => Get(nameof(ExtrasGyroTitle));
+
+    public static string ExtrasGyroHint => Get(nameof(ExtrasGyroHint));
+
+    public static string ExtrasGyroEnable => Get(nameof(ExtrasGyroEnable));
+
+    public static string ExtrasGyroSensX => Get(nameof(ExtrasGyroSensX));
+
+    public static string ExtrasGyroSensY => Get(nameof(ExtrasGyroSensY));
+
+    public static string ExtrasGyroInvertX => Get(nameof(ExtrasGyroInvertX));
+
+    public static string ExtrasGyroInvertY => Get(nameof(ExtrasGyroInvertY));
+
+    public static string ExtrasGyroSmoothing => Get(nameof(ExtrasGyroSmoothing));
+
+    public static string ExtrasGyroActivation => Get(nameof(ExtrasGyroActivation));
+
+    public static string ExtrasGyroButton => Get(nameof(ExtrasGyroButton));
+
+    public static string GyroActAlways => Get(nameof(GyroActAlways));
+
+    public static string GyroActHeld => Get(nameof(GyroActHeld));
+
+    public static string GyroActToggle => Get(nameof(GyroActToggle));
+
+    public static string GyroButtonNone => Get(nameof(GyroButtonNone));
+
+    public static string ExtrasTouchpadTitle => Get(nameof(ExtrasTouchpadTitle));
+
+    public static string ExtrasTouchpadHint => Get(nameof(ExtrasTouchpadHint));
+
+    public static string ExtrasTouchpadEnable => Get(nameof(ExtrasTouchpadEnable));
+
+    public static string ExtrasTouchpadSpeed => Get(nameof(ExtrasTouchpadSpeed));
+
+    public static string ExtrasTouchpadAccel => Get(nameof(ExtrasTouchpadAccel));
+
+    public static string ExtrasButtonsTitle => Get(nameof(ExtrasButtonsTitle));
+
+    public static string ExtrasButtonsHint => Get(nameof(ExtrasButtonsHint));
+
+    public static string ExtrasTurbo => Get(nameof(ExtrasTurbo));
+
+    public static string ExtrasToggle => Get(nameof(ExtrasToggle));
+
+    public static string ExtrasHz => Get(nameof(ExtrasHz));
+
+    public static string DashboardActiveGame => Get(nameof(DashboardActiveGame));
+
+    public static string NotifyBatteryLow => Get(nameof(NotifyBatteryLow));
+
+    public static string NotifyBatteryCritical => Get(nameof(NotifyBatteryCritical));
+
+    public static string TrayTooltipBattery => Get(nameof(TrayTooltipBattery));
+
     public static string Format(string template, params object[] args) => string.Format(CultureInfo.CurrentCulture, template, args);
 }

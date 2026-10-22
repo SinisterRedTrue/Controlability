@@ -50,6 +50,12 @@ public interface IEngine : IDisposable
 
     DriverStatus DriverStatus { get; }
 
+    /// <summary>
+    /// Process name of the game whose own profile is in use because it has the focus, or null. Follows the foreground
+    /// window about once a second.
+    /// </summary>
+    string? ActiveGame { get; }
+
     /// <summary>Number of input-loop ticks that threw (and were survived).</summary>
     long TickErrorCount { get; }
 

@@ -1,3 +1,4 @@
+using Controlability.Core.Extras;
 using Controlability.Core.Mapping;
 using Controlability.Core.Models;
 
@@ -46,10 +47,34 @@ public sealed record ProfileExtras
 {
     public bool GyroToRightStick { get; set; }
 
+    /// <summary>Gyro strength per axis; 1 tilts the stick fully at 180 degrees per second.</summary>
+    public float GyroSensitivityX { get; set; } = 1f;
+
+    public float GyroSensitivityY { get; set; } = 1f;
+
+    public bool GyroInvertX { get; set; }
+
+    public bool GyroInvertY { get; set; }
+
+    /// <summary>0 = raw, 1 = very smooth.</summary>
+    public float GyroSmoothing { get; set; } = 0.3f;
+
+    public GyroActivation GyroActivation { get; set; } = GyroActivation.Always;
+
+    /// <summary>A <see cref="ButtonId"/> name such as "LeftShoulder", for the hold and toggle activation modes. Empty = always on.</summary>
+    public string GyroButton { get; set; } = "";
+
     public bool TouchpadMouse { get; set; }
+
+    public float TouchpadSensitivity { get; set; } = 1f;
+
+    public float TouchpadAcceleration { get; set; } = 0.5f;
 
     /// <summary>Xbox button name to presses per second.</summary>
     public Dictionary<string, int> Turbo { get; set; } = [];
+
+    /// <summary>Xbox button names where one press holds the button and the next releases it.</summary>
+    public List<string> Toggle { get; set; } = [];
 }
 
 /// <summary>Lightbar color as "#RRGGBB".</summary>

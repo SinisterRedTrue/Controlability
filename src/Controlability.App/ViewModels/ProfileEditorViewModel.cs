@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Input;
 using Controlability.App.Resources;
 using Controlability.App.Services;
 using Controlability.Core.Abstractions;
+using Controlability.Core.Extras;
 using Controlability.Core.Keyboard;
 using Controlability.Core.Mapping;
 using Controlability.Core.Models;
@@ -50,6 +51,32 @@ public sealed partial class EditorKeyRow(ProfileEditorViewModel owner, KeyboardC
     public IRelayCommand ClearCommand { get; } = new RelayCommand(() => owner.ClearKey(control));
 }
 
+/// <summary>A value for a combo box with a readable label.</summary>
+public sealed record ValueChoice<T>(T Value, string Label);
+
+/// <summary>One line of the Extras tab: an Xbox button with its turbo and toggle options.</summary>
+public sealed partial class ExtraButtonRow(XboxButton button, string label, Action<ExtraButtonRow> changed) : ObservableObject
+{
+    [ObservableProperty]
+    private bool _isTurbo;
+
+    [ObservableProperty]
+    private double _turboHz = TurboProcessor.DefaultHz;
+
+    [ObservableProperty]
+    private bool _isToggle;
+
+    public XboxButton Button { get; } = button;
+
+    public string Label { get; } = label;
+
+    partial void OnIsTurboChanged(bool value) => changed(this);
+
+    partial void OnTurboHzChanged(double value) => changed(this);
+
+    partial void OnIsToggleChanged(bool value) => changed(this);
+}
+
 /// <summary>A controller type check box in the "Applies to" section.</summary>
 public sealed partial class ControllerTypeOption(ControllerType type, Action<ControllerType, bool> changed) : ObservableObject
 {
@@ -82,6 +109,14 @@ public sealed partial class ProfileEditorViewModel : ObservableObject, IDisposab
         ButtonId.South, ButtonId.East, ButtonId.West, ButtonId.North, ButtonId.Back, ButtonId.Start, ButtonId.Guide,
         ButtonId.LeftStick, ButtonId.RightStick, ButtonId.LeftShoulder, ButtonId.RightShoulder,
         ButtonId.DpadUp, ButtonId.DpadDown, ButtonId.DpadLeft, ButtonId.DpadRight, ButtonId.Touchpad,
+    ];
+
+    private static readonly XboxButton[] ExtraButtons =
+    [
+        XboxButton.A, XboxButton.B, XboxButton.X, XboxButton.Y,
+        XboxButton.LeftShoulder, XboxButton.RightShoulder, XboxButton.LeftThumb, XboxButton.RightThumb,
+        XboxButton.DpadUp, XboxButton.DpadDown, XboxButton.DpadLeft, XboxButton.DpadRight,
+        XboxButton.Start, XboxButton.Back,
     ];
 
     private static readonly KeyboardControl[] AllControls = [.. Enum.GetValues<KeyboardControl>().Where(c => c != KeyboardControl.None)];
@@ -158,6 +193,13 @@ public sealed partial class ProfileEditorViewModel : ObservableObject, IDisposab
         ButtonRows = [.. AllControls.Where(c => KeyboardControls.ToButton(c) != ButtonId.None).Select(c => new ButtonBindingRow(this, c))];
         KeyRows = [.. AllControls.Select(c => new EditorKeyRow(this, c))];
         ControllerTypes = [.. Enum.GetValues<ControllerType>().Select(t => new ControllerTypeOption(t, OnControllerTypeToggled))];
+        ExtraRows = [.. ExtraButtons.Select(b => new ExtraButtonRow(b, ControlLabels.Xbox(XboxToControl(b)), OnExtraRowChanged))];
+        GyroActivationOptions =
+        [
+            new(GyroActivation.Always, Strings.GyroActAlways),
+            new(GyroActivation.WhileHeld, Strings.GyroActHeld),
+            new(GyroActivation.Toggle, Strings.GyroActToggle),
+        ];
 
         LoadDraft();
         RefreshDevice();
@@ -178,6 +220,13 @@ public sealed partial class ProfileEditorViewModel : ObservableObject, IDisposab
     public IReadOnlyList<EditorKeyRow> KeyRows { get; }
 
     public IReadOnlyList<ControllerTypeOption> ControllerTypes { get; }
+
+    public IReadOnlyList<ExtraButtonRow> ExtraRows { get; }
+
+    public IReadOnlyList<ValueChoice<GyroActivation>> GyroActivationOptions { get; }
+
+    /// <summary>The buttons the gyro can be tied to, named like the controller family in use.</summary>
+    public IReadOnlyList<ValueChoice<string>> GyroButtonOptions { get; private set; } = [];
 
     public ObservableCollection<string> ProcessNames { get; } = [];
 
@@ -336,6 +385,84 @@ public sealed partial class ProfileEditorViewModel : ObservableObject, IDisposab
         }
     }
 
+    // ---- Extras -------------------------------------------------------------------------------------------------
+
+    public bool GyroEnabled
+    {
+        get => _draft.Extras.GyroToRightStick;
+        set => SetExtra(_draft.Extras.GyroToRightStick, value, v => _draft.Extras.GyroToRightStick = v);
+    }
+
+    public double GyroSensitivityX
+    {
+        get => _draft.Extras.GyroSensitivityX;
+        set => SetExtra(_draft.Extras.GyroSensitivityX, Round(value), v => _draft.Extras.GyroSensitivityX = v);
+    }
+
+    public double GyroSensitivityY
+    {
+        get => _draft.Extras.GyroSensitivityY;
+        set => SetExtra(_draft.Extras.GyroSensitivityY, Round(value), v => _draft.Extras.GyroSensitivityY = v);
+    }
+
+    public bool GyroInvertX
+    {
+        get => _draft.Extras.GyroInvertX;
+        set => SetExtra(_draft.Extras.GyroInvertX, value, v => _draft.Extras.GyroInvertX = v);
+    }
+
+    public bool GyroInvertY
+    {
+        get => _draft.Extras.GyroInvertY;
+        set => SetExtra(_draft.Extras.GyroInvertY, value, v => _draft.Extras.GyroInvertY = v);
+    }
+
+    public double GyroSmoothing
+    {
+        get => _draft.Extras.GyroSmoothing;
+        set => SetExtra(_draft.Extras.GyroSmoothing, Round(value), v => _draft.Extras.GyroSmoothing = v);
+    }
+
+    public GyroActivation GyroActivation
+    {
+        get => _draft.Extras.GyroActivation;
+        set
+        {
+            if (SetExtra(_draft.Extras.GyroActivation, value, v => _draft.Extras.GyroActivation = v))
+            {
+                OnPropertyChanged(nameof(GyroNeedsButton));
+            }
+        }
+    }
+
+    /// <summary>The button choice only matters when the gyro is not always on.</summary>
+    public bool GyroNeedsButton => GyroActivation != GyroActivation.Always;
+
+    /// <summary>A <see cref="ButtonId"/> name, or empty for none.</summary>
+    public string GyroButton
+    {
+        get => _draft.Extras.GyroButton;
+        set => SetExtra(_draft.Extras.GyroButton, value ?? "", v => _draft.Extras.GyroButton = v);
+    }
+
+    public bool TouchpadMouse
+    {
+        get => _draft.Extras.TouchpadMouse;
+        set => SetExtra(_draft.Extras.TouchpadMouse, value, v => _draft.Extras.TouchpadMouse = v);
+    }
+
+    public double TouchpadSensitivity
+    {
+        get => _draft.Extras.TouchpadSensitivity;
+        set => SetExtra(_draft.Extras.TouchpadSensitivity, Round(value), v => _draft.Extras.TouchpadSensitivity = v);
+    }
+
+    public double TouchpadAcceleration
+    {
+        get => _draft.Extras.TouchpadAcceleration;
+        set => SetExtra(_draft.Extras.TouchpadAcceleration, Round(value), v => _draft.Extras.TouchpadAcceleration = v);
+    }
+
     public void Dispose()
     {
         StopBindTimer();
@@ -369,6 +496,7 @@ public sealed partial class ProfileEditorViewModel : ObservableObject, IDisposab
         {
             _labelType = labelType;
             RefreshButtonRows();
+            RefreshGyroButtons();
         }
     }
 
@@ -681,6 +809,78 @@ public sealed partial class ProfileEditorViewModel : ObservableObject, IDisposab
 
     private static float Round(double value) => (float)Math.Round(value, 3);
 
+    private static KeyboardControl XboxToControl(XboxButton button)
+        => Enum.TryParse<KeyboardControl>(button.ToString(), out var control) ? control : KeyboardControl.None;
+
+    /// <summary>Stores an Extras value in the draft when it changed. Returns whether it did.</summary>
+    private bool SetExtra<T>(T current, T value, Action<T> store, [CallerMemberName] string? name = null)
+    {
+        if (EqualityComparer<T>.Default.Equals(current, value))
+        {
+            return false;
+        }
+
+        store(value);
+        Edited(name);
+        return true;
+    }
+
+    private void OnExtraRowChanged(ExtraButtonRow row)
+    {
+        if (_loading)
+        {
+            return;
+        }
+
+        var extras = _draft.Extras;
+        var key = row.Button.ToString();
+        extras.Turbo.Remove(key);
+        extras.Toggle.RemoveAll(name => string.Equals(name, key, StringComparison.OrdinalIgnoreCase));
+        if (row.IsTurbo)
+        {
+            extras.Turbo[key] = (int)Math.Round(Math.Clamp(row.TurboHz, TurboProcessor.MinHz, TurboProcessor.MaxHz));
+        }
+
+        if (row.IsToggle)
+        {
+            extras.Toggle.Add(key);
+        }
+
+        Edited(nameof(ExtraRows));
+    }
+
+    private void RefreshExtraRows()
+    {
+        var extras = _draft.Extras;
+        _loading = true;
+        try
+        {
+            foreach (var row in ExtraRows)
+            {
+                var key = row.Button.ToString();
+                var turbo = extras.Turbo.FirstOrDefault(pair => string.Equals(pair.Key, key, StringComparison.OrdinalIgnoreCase));
+                row.IsTurbo = turbo.Key is not null;
+                row.TurboHz = turbo.Key is not null ? turbo.Value : TurboProcessor.DefaultHz;
+                row.IsToggle = extras.Toggle.Any(name => string.Equals(name, key, StringComparison.OrdinalIgnoreCase));
+            }
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void RefreshGyroButtons()
+    {
+        GyroButtonOptions =
+        [
+            new("", Strings.GyroButtonNone),
+            .. BindableSources.Select(source => new ValueChoice<string>(source.ToString(), ControlLabels.Physical(_labelType, source))),
+        ];
+        OnPropertyChanged(nameof(GyroButtonOptions));
+        OnPropertyChanged(nameof(GyroButton));
+    }
+
     private static XboxButton ControlsToXbox(KeyboardControl control) => SettingsViewModel.XboxButtonOf(control);
 
     private void SetStick(ProfileStick stick, double value, bool inner, [CallerMemberName] string? name = null)
@@ -797,6 +997,8 @@ public sealed partial class ProfileEditorViewModel : ObservableObject, IDisposab
         }
 
         CurveOptions = curves;
+        RefreshExtraRows();
+        RefreshGyroButtons();
         OnPropertyChanged(string.Empty);
         Refresh();
     }
@@ -866,6 +1068,15 @@ public sealed partial class ProfileEditorViewModel : ObservableObject, IDisposab
             {
                 errors.Add(ex.Message);
             }
+        }
+
+        try
+        {
+            _ = ProfileMapper.ToExtrasSettings(_draft);
+        }
+        catch (ProfileFormatException ex)
+        {
+            errors.Add(ex.Message);
         }
 
         IsValid = errors.Count == 0;

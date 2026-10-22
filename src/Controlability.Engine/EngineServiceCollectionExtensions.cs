@@ -2,6 +2,7 @@ using Controlability.Core.Abstractions;
 using Controlability.Core.Profiles;
 using Controlability.Core.Settings;
 using Controlability.Input.Keyboard;
+using Controlability.Input.Mouse;
 using Controlability.Input.Sdl;
 using Controlability.Output.ViGEm;
 using Controlability.Platform;
@@ -65,6 +66,8 @@ public static class EngineServiceCollectionExtensions
             return source;
         }));
         services.TryAddSingleton<IKeyboardSource>(provider => new RawInputKeyboardSource(provider.GetRequiredService<IClock>()));
+        services.TryAddSingleton<IMouseInjector, SendInputMouse>();
+        services.TryAddSingleton<IGameProcessWatcher>(_ => new GameProcessWatcher());
         services.TryAddSingleton<IEngine>(provider =>
         {
             var settings = provider.GetRequiredService<Settings>();
@@ -79,7 +82,9 @@ public static class EngineServiceCollectionExtensions
                 provider.GetRequiredService<IDeviceHider>(),
                 options.PersistSettings ? store.Save : null,
                 options.Log,
-                provider.GetRequiredService<IKeyboardSource>());
+                provider.GetRequiredService<IKeyboardSource>(),
+                provider.GetRequiredService<IMouseInjector>(),
+                provider.GetRequiredService<IGameProcessWatcher>());
         });
         return services;
     }

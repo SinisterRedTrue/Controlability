@@ -17,7 +17,7 @@ namespace Controlability.Input.Sdl;
 /// raised on the polling thread. <see cref="Dispose"/> also calls SDL, so call it on the polling thread (or after it stopped).
 /// </para>
 /// </summary>
-public sealed unsafe class SdlControllerSource : IInputSource
+public sealed unsafe class SdlControllerSource : IInputSource, ISensorControl
 {
     private static readonly TimeSpan BatteryRefresh = TimeSpan.FromSeconds(5);
 
@@ -101,6 +101,9 @@ public sealed unsafe class SdlControllerSource : IInputSource
 
     public void SetLed(DeviceId id, byte r, byte g, byte b)
         => _commands.Enqueue(new Command(CommandKind.Led, id, r, g, b));
+
+    public void SetGyroEnabled(DeviceId id, bool enabled)
+        => _commands.Enqueue(new Command(CommandKind.Gyro, id, enabled ? (byte)1 : (byte)0, 0, 0));
 
     public void Dispose()
     {
@@ -379,6 +382,11 @@ public sealed unsafe class SdlControllerSource : IInputSource
                 case CommandKind.Led when device.Info.Capabilities.HasFlag(DeviceCapabilities.Led):
                     SDL_SetGamepadLED(device.Pad, command.A, command.B, (byte)command.C);
                     break;
+                case CommandKind.Gyro when device.Info.Capabilities.HasFlag(DeviceCapabilities.Gyro):
+                    // The sensor draws battery, so it runs only while a profile steers with it.
+                    device.GyroEnabled = SDL_SetGamepadSensorEnabled(device.Pad, SDL_SensorType.SDL_SENSOR_GYRO, command.A != 0)
+                        && command.A != 0;
+                    break;
             }
         }
     }
@@ -403,9 +411,10 @@ public sealed unsafe class SdlControllerSource : IInputSource
     {
         Rumble,
         Led,
+        Gyro,
     }
 
-    /// <summary>Rumble: A = low, B = high, C = duration ms. LED: A = red, B = green, C = blue.</summary>
+    /// <summary>Rumble: A = low, B = high, C = duration ms. LED: A = red, B = green, C = blue. Gyro: A = 1 on, 0 off.</summary>
     private readonly record struct Command(CommandKind Kind, DeviceId Id, byte A, byte B, int C);
 
     private sealed class Device
@@ -424,7 +433,7 @@ public sealed unsafe class SdlControllerSource : IInputSource
 
         public DeviceInfo Info { get; }
 
-        public bool GyroEnabled { get; }
+        public bool GyroEnabled { get; set; }
 
         public InputState State { get; set; }
 

@@ -120,6 +120,16 @@ public sealed partial class ProfileStore
     /// <c>default-*</c> one, then file name order decides. Falls back to <see cref="Profile.Generic"/>.
     /// </summary>
     public Profile FindFor(DeviceInfo device, string? processName)
+        => Best(device, processName, minimumRank: 1) ?? Profile.Generic;
+
+    /// <summary>
+    /// The profile made for a running game: it names <paramref name="processName"/> and, if it lists controller types,
+    /// includes the device's. Null when there is none (the caller then keeps or restores the normal profile).
+    /// </summary>
+    public Profile? FindGameProfile(DeviceInfo device, string? processName)
+        => NormalizeProcess(processName) is null ? null : Best(device, processName, minimumRank: GameRank);
+
+    private Profile? Best(DeviceInfo device, string? processName, int minimumRank)
     {
         ArgumentNullException.ThrowIfNull(device);
 
@@ -136,8 +146,10 @@ public sealed partial class ProfileStore
             }
         }
 
-        return best ?? Profile.Generic;
+        return bestRank >= minimumRank ? best : null;
     }
+
+    private const int GameRank = 3;
 
     private static int RankFor(ProfileTargets targets, ControllerType type, string? process)
     {
@@ -146,7 +158,13 @@ public sealed partial class ProfileStore
         {
             var processMatches = process is not null
                 && targets.ProcessNames.Any(name => string.Equals(NormalizeProcess(name), process, StringComparison.OrdinalIgnoreCase));
-            return processMatches && (targets.ControllerTypes.Count == 0 || typeMatches) ? 3 : 0;
+            if (!processMatches)
+            {
+                return 0;
+            }
+
+            // A game profile made for this kind of controller beats one that names the game only.
+            return targets.ControllerTypes.Count == 0 ? GameRank : typeMatches ? GameRank + 1 : 0;
         }
 
         if (targets.ControllerTypes.Count > 0)

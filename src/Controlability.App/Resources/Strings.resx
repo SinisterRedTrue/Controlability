@@ -229,4 +229,33 @@
   <data name="AppliesAddRunning" xml:space="preserve"><value>Add running program</value></data>
   <data name="AppliesRefresh" xml:space="preserve"><value>Refresh</value></data>
   <data name="TabKeyboardOnly" xml:space="preserve"><value>Only for keyboard profiles. Tick Keyboard under Applies to.</value></data>
+  <data name="TabExtras" xml:space="preserve"><value>Extras</value></data>
+  <data name="ExtrasGyroTitle" xml:space="preserve"><value>Gyro to right stick</value></data>
+  <data name="ExtrasGyroHint" xml:space="preserve"><value>The controller's motion is added to the right stick. Needs a pad with a gyro (PS4, PS5, Switch Pro); the sensor is switched on only while a profile uses it.</value></data>
+  <data name="ExtrasGyroEnable" xml:space="preserve"><value>Steer the right stick with the gyro</value></data>
+  <data name="ExtrasGyroSensX" xml:space="preserve"><value>Sensitivity, left-right</value></data>
+  <data name="ExtrasGyroSensY" xml:space="preserve"><value>Sensitivity, up-down</value></data>
+  <data name="ExtrasGyroInvertX" xml:space="preserve"><value>Invert left-right</value></data>
+  <data name="ExtrasGyroInvertY" xml:space="preserve"><value>Invert up-down</value></data>
+  <data name="ExtrasGyroSmoothing" xml:space="preserve"><value>Smoothing</value></data>
+  <data name="ExtrasGyroActivation" xml:space="preserve"><value>Gyro is active</value></data>
+  <data name="ExtrasGyroButton" xml:space="preserve"><value>Button</value></data>
+  <data name="GyroActAlways" xml:space="preserve"><value>Always</value></data>
+  <data name="GyroActHeld" xml:space="preserve"><value>While the button is held</value></data>
+  <data name="GyroActToggle" xml:space="preserve"><value>Switched on and off with the button</value></data>
+  <data name="GyroButtonNone" xml:space="preserve"><value>(none)</value></data>
+  <data name="ExtrasTouchpadTitle" xml:space="preserve"><value>Touchpad as mouse</value></data>
+  <data name="ExtrasTouchpadHint" xml:space="preserve"><value>One finger moves the cursor, the pad click is a left click, a click with two fingers is a right click. Off by default; while on, the pad click no longer reaches the game as a button.</value></data>
+  <data name="ExtrasTouchpadEnable" xml:space="preserve"><value>Use the touchpad as a mouse</value></data>
+  <data name="ExtrasTouchpadSpeed" xml:space="preserve"><value>Speed</value></data>
+  <data name="ExtrasTouchpadAccel" xml:space="preserve"><value>Acceleration</value></data>
+  <data name="ExtrasButtonsTitle" xml:space="preserve"><value>Turbo and toggle</value></data>
+  <data name="ExtrasButtonsHint" xml:space="preserve"><value>Turbo presses a button over and over while you hold it. Toggle holds a button after one press and lets go after the next. These are the Xbox buttons the game sees.</value></data>
+  <data name="ExtrasTurbo" xml:space="preserve"><value>Turbo</value></data>
+  <data name="ExtrasToggle" xml:space="preserve"><value>Toggle</value></data>
+  <data name="ExtrasHz" xml:space="preserve"><value>presses per second</value></data>
+  <data name="DashboardActiveGame" xml:space="preserve"><value>Game profile: {0}</value></data>
+  <data name="NotifyBatteryLow" xml:space="preserve"><value>{0}: battery low ({1}%)</value></data>
+  <data name="NotifyBatteryCritical" xml:space="preserve"><value>{0}: battery almost empty ({1}%)</value></data>
+  <data name="TrayTooltipBattery" xml:space="preserve"><value>P{0} {1}%</value></data>
 </root>

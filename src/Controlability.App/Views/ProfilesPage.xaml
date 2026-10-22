@@ -332,6 +332,117 @@
                     </ScrollViewer>
                 </TabItem>
 
+                <!-- Extras -->
+                <TabItem Header="{x:Static res:Strings.TabExtras}">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="0,12,20,12">
+                            <TextBlock Text="{x:Static res:Strings.ExtrasGyroTitle}" Style="{StaticResource SectionTitle}" />
+                            <TextBlock Text="{x:Static res:Strings.ExtrasGyroHint}" Style="{StaticResource Hint}" />
+                            <CheckBox IsChecked="{Binding GyroEnabled, Mode=TwoWay}" Content="{x:Static res:Strings.ExtrasGyroEnable}" Margin="0,0,0,8" />
+                            <StackPanel IsEnabled="{Binding GyroEnabled}">
+                            <TextBlock Text="{x:Static res:Strings.ExtrasGyroSensX}" Style="{StaticResource FieldLabel}" />
+                            <Grid Style="{StaticResource Row}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Slider Minimum="0.1" Maximum="5" TickFrequency="0.1" Value="{Binding GyroSensitivityX, Mode=TwoWay}"
+                                        AutomationProperties.Name="{x:Static res:Strings.ExtrasGyroSensX}" />
+                                <TextBlock Grid.Column="1" Text="{Binding GyroSensitivityX, StringFormat=N1}" Style="{StaticResource SliderValue}" />
+                            </Grid>
+                            <TextBlock Text="{x:Static res:Strings.ExtrasGyroSensY}" Style="{StaticResource FieldLabel}" />
+                            <Grid Style="{StaticResource Row}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Slider Minimum="0.1" Maximum="5" TickFrequency="0.1" Value="{Binding GyroSensitivityY, Mode=TwoWay}"
+                                        AutomationProperties.Name="{x:Static res:Strings.ExtrasGyroSensY}" />
+                                <TextBlock Grid.Column="1" Text="{Binding GyroSensitivityY, StringFormat=N1}" Style="{StaticResource SliderValue}" />
+                            </Grid>
+                                <WrapPanel Margin="0,0,0,8">
+                                    <CheckBox IsChecked="{Binding GyroInvertX, Mode=TwoWay}" Content="{x:Static res:Strings.ExtrasGyroInvertX}" Margin="0,0,16,0" />
+                                    <CheckBox IsChecked="{Binding GyroInvertY, Mode=TwoWay}" Content="{x:Static res:Strings.ExtrasGyroInvertY}" />
+                                </WrapPanel>
+                            <TextBlock Text="{x:Static res:Strings.ExtrasGyroSmoothing}" Style="{StaticResource FieldLabel}" />
+                            <Grid Style="{StaticResource Row}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Slider Minimum="0" Maximum="1" TickFrequency="0.05" Value="{Binding GyroSmoothing, Mode=TwoWay}"
+                                        AutomationProperties.Name="{x:Static res:Strings.ExtrasGyroSmoothing}" />
+                                <TextBlock Grid.Column="1" Text="{Binding GyroSmoothing, StringFormat=N2}" Style="{StaticResource SliderValue}" />
+                            </Grid>
+                                <TextBlock Text="{x:Static res:Strings.ExtrasGyroActivation}" Style="{StaticResource FieldLabel}" />
+                                <ComboBox ItemsSource="{Binding GyroActivationOptions}" SelectedValuePath="Value" DisplayMemberPath="Label"
+                                          SelectedValue="{Binding GyroActivation, Mode=TwoWay}" MinWidth="240" HorizontalAlignment="Left" Margin="0,0,0,8"
+                                          AutomationProperties.Name="{x:Static res:Strings.ExtrasGyroActivation}" />
+                                <StackPanel Visibility="{Binding GyroNeedsButton, Converter={StaticResource BoolToVisibility}}">
+                                    <TextBlock Text="{x:Static res:Strings.ExtrasGyroButton}" Style="{StaticResource FieldLabel}" />
+                                    <ComboBox ItemsSource="{Binding GyroButtonOptions}" SelectedValuePath="Value" DisplayMemberPath="Label"
+                                              SelectedValue="{Binding GyroButton, Mode=TwoWay}" MinWidth="240" HorizontalAlignment="Left" Margin="0,0,0,8"
+                                              AutomationProperties.Name="{x:Static res:Strings.ExtrasGyroButton}" />
+                                </StackPanel>
+                            </StackPanel>
+
+                            <TextBlock Text="{x:Static res:Strings.ExtrasTouchpadTitle}" Style="{StaticResource SectionTitle}" Margin="0,16,0,0" />
+                            <TextBlock Text="{x:Static res:Strings.ExtrasTouchpadHint}" Style="{StaticResource Hint}" />
+                            <CheckBox IsChecked="{Binding TouchpadMouse, Mode=TwoWay}" Content="{x:Static res:Strings.ExtrasTouchpadEnable}" Margin="0,0,0,8" />
+                            <StackPanel IsEnabled="{Binding TouchpadMouse}">
+                            <TextBlock Text="{x:Static res:Strings.ExtrasTouchpadSpeed}" Style="{StaticResource FieldLabel}" />
+                            <Grid Style="{StaticResource Row}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Slider Minimum="0.1" Maximum="4" TickFrequency="0.1" Value="{Binding TouchpadSensitivity, Mode=TwoWay}"
+                                        AutomationProperties.Name="{x:Static res:Strings.ExtrasTouchpadSpeed}" />
+                                <TextBlock Grid.Column="1" Text="{Binding TouchpadSensitivity, StringFormat=N1}" Style="{StaticResource SliderValue}" />
+                            </Grid>
+                            <TextBlock Text="{x:Static res:Strings.ExtrasTouchpadAccel}" Style="{StaticResource FieldLabel}" />
+                            <Grid Style="{StaticResource Row}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Slider Minimum="0" Maximum="2" TickFrequency="0.1" Value="{Binding TouchpadAcceleration, Mode=TwoWay}"
+                                        AutomationProperties.Name="{x:Static res:Strings.ExtrasTouchpadAccel}" />
+                                <TextBlock Grid.Column="1" Text="{Binding TouchpadAcceleration, StringFormat=N1}" Style="{StaticResource SliderValue}" />
+                            </Grid>
+                            </StackPanel>
+
+                            <TextBlock Text="{x:Static res:Strings.ExtrasButtonsTitle}" Style="{StaticResource SectionTitle}" Margin="0,16,0,0" />
+                            <TextBlock Text="{x:Static res:Strings.ExtrasButtonsHint}" Style="{StaticResource Hint}" />
+                            <ItemsControl ItemsSource="{Binding ExtraRows}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type vm:ExtraButtonRow}">
+                                        <Grid Margin="0,0,0,6">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="170" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding Label}" VerticalAlignment="Center" />
+                                            <CheckBox Grid.Column="1" IsChecked="{Binding IsTurbo, Mode=TwoWay}" Content="{x:Static res:Strings.ExtrasTurbo}"
+                                                      MinWidth="0" Margin="0,0,8,0" AutomationProperties.Name="{Binding Label, StringFormat={}{0} turbo}" />
+                                            <Slider Grid.Column="2" Width="120" Minimum="1" Maximum="30" TickFrequency="1" IsSnapToTickEnabled="True"
+                                                    Value="{Binding TurboHz, Mode=TwoWay}" IsEnabled="{Binding IsTurbo}" VerticalAlignment="Center"
+                                                    AutomationProperties.Name="{x:Static res:Strings.ExtrasHz}" />
+                                            <TextBlock Grid.Column="3" Text="{Binding TurboHz, StringFormat=N0}" Width="28" TextAlignment="Right"
+                                                       VerticalAlignment="Center" Margin="4,0,0,0" />
+                                            <CheckBox Grid.Column="4" IsChecked="{Binding IsToggle, Mode=TwoWay}" Content="{x:Static res:Strings.ExtrasToggle}"
+                                                      MinWidth="0" Margin="16,0,0,0" AutomationProperties.Name="{Binding Label, StringFormat={}{0} toggle}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
                 <!-- Applies to -->
                 <TabItem Header="{x:Static res:Strings.TabAppliesTo}">
                     <ScrollViewer VerticalScrollBarVisibility="Auto">

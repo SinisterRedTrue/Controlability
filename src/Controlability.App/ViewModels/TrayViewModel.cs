@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.Input;
 using Controlability.App.Resources;
 using Controlability.App.Services;
 using Controlability.Core.Abstractions;
+using Controlability.Core.Models;
 using Controlability.Core.Settings;
 using Controlability.Engine;
 
@@ -83,6 +84,13 @@ public sealed class TrayViewModel : IDisposable
             TrayState.Paused => Strings.TrayTooltipPaused,
             _ => Strings.TrayTooltipNormal,
         };
+
+        var batteries = BatteryLines();
+        if (batteries.Count > 0 && State != TrayState.Error)
+        {
+            Tooltip += Environment.NewLine + string.Join("  ", batteries);
+        }
+
         SlotLines =
         [
             .. _engine.Slots.Select(slot => slot.DeviceName is { Length: > 0 } name
@@ -90,5 +98,22 @@ public sealed class TrayViewModel : IDisposable
                 : Strings.Format(Strings.TraySlotEmpty, slot.Index + 1)),
         ];
         Updated?.Invoke();
+    }
+
+    /// <summary>"P1 72%" for each slot whose controller reports a battery level.</summary>
+    private List<string> BatteryLines()
+    {
+        var lines = new List<string>();
+        foreach (var slot in _engine.Slots)
+        {
+            if (slot.Device is { } id
+                && _engine.TryGetLiveState(id, out var raw, out _)
+                && raw.Battery.State is BatteryState.Discharging or BatteryState.Charging or BatteryState.Full)
+            {
+                lines.Add(Strings.Format(Strings.TrayTooltipBattery, slot.Index + 1, raw.Battery.Percent));
+            }
+        }
+
+        return lines;
     }
 }

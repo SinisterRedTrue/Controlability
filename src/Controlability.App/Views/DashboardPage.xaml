@@ -42,6 +42,11 @@
         <Grid Grid.Row="0" Margin="0,0,0,12">
             <TextBlock Text="{x:Static res:Strings.DashboardTitle}" FontSize="28" FontWeight="SemiBold" />
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <Border Style="{StaticResource DriverChip}" Background="#333B82F6" BorderBrush="#3B82F6" Focusable="True"
+                        Visibility="{Binding HasActiveGame, Converter={StaticResource BoolToVisibility}}"
+                        AutomationProperties.Name="{Binding ActiveGameText}">
+                    <TextBlock Text="{Binding ActiveGameText}" />
+                </Border>
                 <Border AutomationProperties.Name="{Binding ViGEmChipAutomationName}" Focusable="True">
                     <Border.Style>
                         <Style TargetType="Border" BasedOn="{StaticResource DriverChip}">

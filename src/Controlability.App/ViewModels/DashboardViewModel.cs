@@ -85,6 +85,11 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
 
     public bool IsStyleKeyboard => KeyboardStyle == KeyboardInputStyle.NormalKeyboard;
 
+    /// <summary>"Game profile: eldenring" while a game with its own profile has the focus, else empty.</summary>
+    public string ActiveGameText { get; private set; } = "";
+
+    public bool HasActiveGame => ActiveGameText.Length > 0;
+
     public bool ShowViGEmBanner => !ViGEmAvailable;
 
     public bool ShowHidHideBanner => !HidHideAvailable;
@@ -176,6 +181,10 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
             }
 
             RefreshDevices(devices, slots);
+
+            ActiveGameText = _engine.ActiveGame is { Length: > 0 } game ? Strings.Format(Strings.DashboardActiveGame, game) : "";
+            OnPropertyChanged(nameof(ActiveGameText));
+            OnPropertyChanged(nameof(HasActiveGame));
 
             IsPaused = _engine.IsPaused;
             Mode = _engine.Mode;

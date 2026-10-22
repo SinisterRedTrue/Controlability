@@ -98,6 +98,8 @@ public sealed class FakeEngine : IEngine
 
     public DriverStatus DriverStatus { get; set; } = new(true, true);
 
+    public string? ActiveGame { get; set; }
+
     public long TickErrorCount => 0;
 
     public Dictionary<DeviceId, InputState> Live { get; } = [];

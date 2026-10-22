@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Controlability.Core.Abstractions;
+using Controlability.Core.Extras;
 using Controlability.Core.Keyboard;
 using Controlability.Core.Mapping;
 using Controlability.Core.Models;
@@ -23,6 +24,8 @@ public sealed class Engine : IEngine
     private const int IdentifyBlinkMs = 150;
     private const int IdentifyBlinks = 3;
 
+    private static readonly MouseButtons[] MouseButtonOrder = [MouseButtons.Left, MouseButtons.Right, MouseButtons.Middle];
+
     private static readonly (byte R, byte G, byte B)[] SlotColors =
     [
         (0, 0, 255), // P1 blue
@@ -40,6 +43,8 @@ public sealed class Engine : IEngine
     private readonly IKeyboardSource? _keyboard;
     private readonly Action<Settings>? _saveSettings;
     private readonly Action<string>? _log;
+    private readonly IMouseInjector? _mouse;
+    private readonly IGameProcessWatcher? _gameWatcher;
     private readonly SlotManager _slots;
     private readonly UnhideOnExit? _unhideOnExit;
 
@@ -57,12 +62,14 @@ public sealed class Engine : IEngine
     private bool _dirty;
     private bool _disposed;
     private long _tickErrors;
+    private string? _foreground;
 
     private volatile IReadOnlyList<DeviceInfo> _devicesSnapshot = [];
     private volatile IReadOnlyList<SlotStatus> _slotsSnapshot;
     private volatile IReadOnlyDictionary<DeviceId, DeviceRuntime> _liveLookup = new Dictionary<DeviceId, DeviceRuntime>();
     private volatile bool _paused;
     private volatile IReadOnlyCollection<DeviceId> _hiddenSnapshot = [];
+    private volatile string? _activeGame;
 
     public Engine(
         IReadOnlyList<IInputSource> sources,
@@ -73,7 +80,9 @@ public sealed class Engine : IEngine
         IDeviceHider? hider = null,
         Action<Settings>? saveSettings = null,
         Action<string>? log = null,
-        IKeyboardSource? keyboard = null)
+        IKeyboardSource? keyboard = null,
+        IMouseInjector? mouse = null,
+        IGameProcessWatcher? gameWatcher = null)
     {
         _sources = sources;
         _sink = sink;
@@ -84,6 +93,8 @@ public sealed class Engine : IEngine
         _saveSettings = saveSettings;
         _log = log;
         _keyboard = keyboard;
+        _mouse = mouse;
+        _gameWatcher = gameWatcher;
 
         _slots = new SlotManager(clock, settings.SlotPolicy, TimeSpan.FromSeconds(settings.GracePeriodSeconds), settings.RememberedSlots)
         {
@@ -115,6 +126,12 @@ public sealed class Engine : IEngine
             keyboard.Diagnostic += message => _log?.Invoke($"[keyboard] {message}");
         }
 
+        if (gameWatcher is not null)
+        {
+            // Raised on the watcher's timer thread; the switch itself happens on the input thread.
+            gameWatcher.ForegroundProcessChanged += process => _commands.Enqueue(() => OnForegroundChanged(process));
+        }
+
         _sink.RumbleRequested += OnRumbleRequested;
         if (hider is not null)
         {
@@ -135,6 +152,8 @@ public sealed class Engine : IEngine
     public KeyboardInputStyle KeyboardStyle => _settings.KeyboardStyle;
 
     public IReadOnlyList<DeviceInfo> Devices => _devicesSnapshot;
+
+    public string? ActiveGame => _activeGame;
 
     public IReadOnlyList<SlotStatus> Slots => _slotsSnapshot;
 
@@ -161,6 +180,7 @@ public sealed class Engine : IEngine
             _commands.Enqueue(ApplyMode);
             _loop = new InputLoop(Tick, rate, Shutdown);
             _loop.Start();
+            _gameWatcher?.Start();
         }
     }
 
@@ -173,6 +193,7 @@ public sealed class Engine : IEngine
             _loop = null;
         }
 
+        _gameWatcher?.Stop();
         loop?.Stop();
     }
 
@@ -182,6 +203,16 @@ public sealed class Engine : IEngine
         _slots.Paused = paused;
         SyncHiding();
         SyncKeyboardBlocking();
+
+        // Buttons pressed while paused must not leave a toggle latched or a mouse button down.
+        foreach (var slotRuntime in _slotRuntimes)
+        {
+            if (slotRuntime.Device is { } device && slotRuntime.Profile is { } profile)
+            {
+                ApplyExtras(device, profile);
+            }
+        }
+
         if (paused)
         {
             foreach (var slot in _slotRuntimes)
@@ -229,7 +260,11 @@ public sealed class Engine : IEngine
                 return;
             }
 
+            // A profile picked by hand sticks: leaving the game does not take it away.
+            _slotRuntimes[slot].AutoProfile = false;
+            _slotRuntimes[slot].RestoreProfileId = null;
             ApplyProfile(slot, runtime, profile);
+            UpdateGameProfile(slot);
             MarkDirty();
         });
     }
@@ -395,6 +430,7 @@ public sealed class Engine : IEngine
         }
 
         Stop();
+        _gameWatcher?.Dispose();
         _sink.RumbleRequested -= OnRumbleRequested;
         foreach (var source in _sources)
         {
@@ -498,6 +534,7 @@ public sealed class Engine : IEngine
             {
                 // The runtime stays reachable (via the slot) until the grace period ends.
                 _devices.Remove(id);
+                ReleaseMouse(runtime);
                 RebuildDeviceViews();
                 ApplyEvents(_slots.OnDeviceRemoved(id));
             }
@@ -516,7 +553,7 @@ public sealed class Engine : IEngine
                     raw = InputState.Neutral;
                 }
 
-                device.Mapped = Mapper.Map(in raw, device.Mapping);
+                MapDevice(device, in raw);
                 device.HasState = true;
                 device.Live.Write(in raw, in device.Mapped);
             }
@@ -524,6 +561,59 @@ public sealed class Engine : IEngine
             {
                 device.HasState = false;
             }
+        }
+    }
+
+    private void MapDevice(DeviceRuntime device, in InputState raw)
+    {
+        if (raw.Battery != device.Battery)
+        {
+            device.Battery = raw.Battery;
+            MarkDirty();
+        }
+
+        if (device.Extras is not { } extras || _paused)
+        {
+            device.Mapped = Mapper.Map(in raw, device.Mapping);
+            return;
+        }
+
+        if (extras.UsesTouchpad)
+        {
+            DriveMouse(device, extras.ReadMouse(in raw));
+        }
+
+        var input = extras.Prepare(in raw);
+        device.Mapped = Mapper.Map(in input, device.Mapping);
+        extras.Apply(in raw, ref device.Mapped);
+    }
+
+    private void DriveMouse(DeviceRuntime device, MouseFrame frame)
+    {
+        if (_mouse is null)
+        {
+            return;
+        }
+
+        _mouse.Move(frame.Dx, frame.Dy);
+        var changed = frame.Buttons ^ device.MouseHeld;
+        foreach (var button in MouseButtonOrder)
+        {
+            if ((changed & button) != 0)
+            {
+                _mouse.SetButton(button, (frame.Buttons & button) != 0);
+            }
+        }
+
+        device.MouseHeld = frame.Buttons;
+    }
+
+    /// <summary>Lets go of any mouse button this device holds (device gone, slot emptied, paused, profile changed).</summary>
+    private void ReleaseMouse(DeviceRuntime device)
+    {
+        if (device.MouseHeld != MouseButtons.None)
+        {
+            DriveMouse(device, default);
         }
     }
 
@@ -540,6 +630,7 @@ public sealed class Engine : IEngine
                         slot.Device = runtime;
                         Volatile.Write(ref slot.RumbleTarget, runtime);
                         ApplyProfile(e.Slot, runtime, _profiles.FindFor(runtime.Info, null));
+                        UpdateGameProfile(e.Slot);
 
                         // The game must never see the real pad next to the virtual one: hide before the pad connects.
                         HideDevice(runtime.Info);
@@ -572,12 +663,16 @@ public sealed class Engine : IEngine
                     {
                         // The pad may still be connected (user unassigned it): stop any running rumble.
                         leaving.Source.SetRumble(leaving.Info.Id, 0, 0, 0);
+                        ReleaseMouse(leaving);
+                        leaving.Extras = null;
+                        SetGyro(leaving, false);
                         UnhideDevice(leaving.Info);
                     }
 
                     Volatile.Write(ref slot.RumbleTarget, null);
                     _padsToConnect.Remove(e.Slot);
                     slot.Reset();
+                    RefreshActiveGame();
                     break;
             }
 
@@ -763,7 +858,92 @@ public sealed class Engine : IEngine
             runtime.Mapping = MappingSettings.Default;
         }
 
+        ApplyExtras(runtime, profile);
         ApplyLed(slotIndex, runtime, profile);
+    }
+
+    /// <summary>Builds the profile's extras for a device and switches its gyro to what they need. Input thread.</summary>
+    private void ApplyExtras(DeviceRuntime runtime, Profile profile)
+    {
+        ReleaseMouse(runtime);
+
+        var settings = ExtrasSettings.None;
+        try
+        {
+            settings = ProfileMapper.ToExtrasSettings(profile);
+        }
+        catch (ProfileFormatException ex)
+        {
+            _log?.Invoke($"{ex.Message} Extras are off for \"{runtime.Info.Name}\".");
+        }
+
+        runtime.Extras = settings.IsEmpty ? null : new ExtrasProcessor(settings, _clock);
+        SetGyro(runtime, settings.Gyro.Enabled && runtime.Info.Capabilities.HasFlag(DeviceCapabilities.Gyro));
+    }
+
+    private static void SetGyro(DeviceRuntime runtime, bool enabled)
+    {
+        if (runtime.GyroOn != enabled && runtime.Source is ISensorControl sensors)
+        {
+            sensors.SetGyroEnabled(runtime.Info.Id, enabled);
+        }
+
+        runtime.GyroOn = enabled;
+    }
+
+    private void OnForegroundChanged(string? process)
+    {
+        _foreground = process;
+        for (var i = 0; i < _slotRuntimes.Length; i++)
+        {
+            UpdateGameProfile(i);
+        }
+
+        MarkDirty();
+    }
+
+    /// <summary>
+    /// Auto profile for one slot: while a game with its own profile has the focus the slot uses that profile; when the
+    /// focus leaves, the profile from before comes back. A profile chosen by hand is never taken away.
+    /// </summary>
+    private void UpdateGameProfile(int slotIndex)
+    {
+        var slot = _slotRuntimes[slotIndex];
+        if (slot.Device is not { } runtime)
+        {
+            return;
+        }
+
+        var game = _foreground is null ? null : _profiles.FindGameProfile(runtime.Info, _foreground);
+        if (game is not null)
+        {
+            if (slot.Profile?.Id != game.Id)
+            {
+                slot.RestoreProfileId ??= slot.Profile?.Id;
+                slot.AutoProfile = true;
+                ApplyProfile(slotIndex, runtime, game);
+            }
+        }
+        else if (slot.AutoProfile)
+        {
+            var back = (slot.RestoreProfileId is { } id ? _profiles.Get(id) : null) ?? _profiles.FindFor(runtime.Info, null);
+            slot.AutoProfile = false;
+            slot.RestoreProfileId = null;
+            ApplyProfile(slotIndex, runtime, back);
+        }
+
+        slot.InGame = game is not null;
+        RefreshActiveGame();
+    }
+
+    private void RefreshActiveGame()
+    {
+        var active = _slotRuntimes.Any(slot => slot.InGame) ? _foreground : null;
+        if (_activeGame != active)
+        {
+            _activeGame = active;
+            MarkDirty();
+        }
     }
 
     private void UpdateIdentifies()
@@ -1011,8 +1191,20 @@ public sealed class Engine : IEngine
         public bool HasLast;
         public int? XInputIndex;
 
+        /// <summary>The slot's profile was switched because a game with its own profile has the focus.</summary>
+        public bool AutoProfile;
+
+        /// <summary>Profile to put back when that game loses the focus.</summary>
+        public string? RestoreProfileId;
+
+        /// <summary>A game profile applies to this slot right now (switched automatically or chosen by hand).</summary>
+        public bool InGame;
+
         public void Reset()
         {
+            AutoProfile = false;
+            RestoreProfileId = null;
+            InGame = false;
             Device = null;
             Profile = null;
             Handle = SlotHandle.Invalid;
@@ -1035,5 +1227,14 @@ public sealed class Engine : IEngine
         public bool HasState;
 
         public XboxState Mapped;
+
+        /// <summary>Null when the profile has no extras (or the device has no slot).</summary>
+        public ExtrasProcessor? Extras { get; set; }
+
+        public bool GyroOn;
+
+        public MouseButtons MouseHeld;
+
+        public BatteryInfo Battery;
     }
 }

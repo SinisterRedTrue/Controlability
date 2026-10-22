@@ -37,6 +37,7 @@ public partial class App : Application
         // Created before the engine starts, so the first connect toasts are not missed.
         _host.Services.GetRequiredService<TrayIconHost>();
         _host.Services.GetRequiredService<ConnectionNotifier>();
+        _host.Services.GetRequiredService<BatteryNotifier>();
         var window = _host.Services.GetRequiredService<MainWindow>();
         _host.Start();
 
@@ -88,6 +89,7 @@ public partial class App : Application
         services.AddSingleton<DevicesViewModel>();
         services.AddSingleton<ProfilesViewModel>();
         services.AddSingleton<ConnectionNotifier>();
+        services.AddSingleton<BatteryNotifier>();
 
         services.AddSingleton<TrayIconHost>();
         services.AddSingleton<INotifier>(provider => provider.GetRequiredService<TrayIconHost>());

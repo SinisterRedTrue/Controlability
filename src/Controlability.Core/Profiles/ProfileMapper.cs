@@ -1,3 +1,4 @@
+using Controlability.Core.Extras;
 using Controlability.Core.Mapping;
 using Controlability.Core.Models;
 
@@ -26,6 +27,70 @@ public static class ProfileMapper
             throw new ProfileFormatException($"Profile \"{profile.Id}\" has an invalid value: {ex.Message}", ex);
         }
     }
+
+    /// <summary>
+    /// Builds the extras (gyro, touchpad mouse, turbo, toggle). Throws <see cref="ProfileFormatException"/> on an unknown
+    /// button name or an out-of-range value, like <see cref="ToMappingSettings"/>.
+    /// </summary>
+    public static ExtrasSettings ToExtrasSettings(Profile profile)
+    {
+        ArgumentNullException.ThrowIfNull(profile);
+        var extras = profile.Extras;
+
+        try
+        {
+            var gyroButton = ButtonId.None;
+            if (extras.GyroButton.Length > 0
+                && (!Enum.TryParse(extras.GyroButton, ignoreCase: true, out gyroButton) || !IsSingleBit((uint)gyroButton)))
+            {
+                throw new ArgumentException($"Unknown gyro button \"{extras.GyroButton}\".");
+            }
+
+            var turbo = new Dictionary<XboxButton, int>();
+            foreach (var (name, hz) in extras.Turbo)
+            {
+                turbo[ParseXboxButton(name)] = hz;
+            }
+
+            var toggle = extras.Toggle.Select(ParseXboxButton).Distinct().ToList();
+
+            var settings = new ExtrasSettings(
+                new GyroSettings
+                {
+                    Enabled = extras.GyroToRightStick,
+                    SensitivityX = extras.GyroSensitivityX,
+                    SensitivityY = extras.GyroSensitivityY,
+                    InvertX = extras.GyroInvertX,
+                    InvertY = extras.GyroInvertY,
+                    Smoothing = extras.GyroSmoothing,
+                    Activation = extras.GyroActivation,
+                    Button = gyroButton,
+                },
+                new TouchpadMouseSettings
+                {
+                    Enabled = extras.TouchpadMouse,
+                    Sensitivity = extras.TouchpadSensitivity,
+                    Acceleration = extras.TouchpadAcceleration,
+                },
+                turbo,
+                toggle);
+
+            // The processors validate the numbers; building them here reports a bad value when the profile loads.
+            _ = new GyroProcessor(settings.Gyro);
+            _ = new TouchpadMouseProcessor(settings.Touchpad);
+            _ = new TurboProcessor(settings.Turbo);
+            return settings;
+        }
+        catch (ArgumentException ex)
+        {
+            throw new ProfileFormatException($"Profile \"{profile.Id}\" has an invalid extra: {ex.Message}", ex);
+        }
+    }
+
+    private static XboxButton ParseXboxButton(string name)
+        => Enum.TryParse<XboxButton>(name, ignoreCase: true, out var button) && button != XboxButton.None
+            ? button
+            : throw new ArgumentException($"Unknown Xbox button \"{name}\".");
 
     private static StickSettings ToStick(ProfileStick stick)
     {
