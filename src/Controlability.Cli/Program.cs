@@ -1,4 +1,5 @@
 ﻿using Controlability.Cli;
+using Controlability.Core.Settings;
 
 const string Usage = """
     Controlability CLI
@@ -9,8 +10,15 @@ const string Usage = """
       watch [index]    Live view of sticks, triggers, buttons and battery (Ctrl+C to quit).
       rumble [index]   Rumble for 1 s and cycle the LED red, green, blue.
       forward [index]  Forward the controller to virtual pad 1 through the engine, with rumble (Ctrl+C to quit).
-      run [seconds]    Full engine with auto-assign: every controller gets the next free slot. Prints slot
+      run [seconds] [--mode a|b]
+                       Full engine with auto-assign: every controller gets the next free slot. Prints slot
                        changes and the CPU used; stops after [seconds] (default: until Ctrl+C).
+                       --mode b = keyboard-as-controller: keyboard + mouse become pad 1 (panic key
+                       Ctrl+Alt+Pause), controllers start at pad 2. Not saved to the settings.
+                       --game <process[,process]> = capture only while that game has the focus (for example
+                       --game MinecraftDungeons). Without it Mode B swallows no keys, so the PC stays usable.
+      keys             Print raw keyboard events with the id of the keyboard they came from, to pick the
+                       keyboard for Settings.KeyboardDevice (Ctrl+C to quit). Captures nothing.
       latency [seconds] [index]
                        Like forward for N seconds (default 10), then print read -> submit latency.
       driver           Print the ViGEmBus driver status.
@@ -24,6 +32,19 @@ if (args.Length == 0 || args[0] is "-h" or "--help" or "help")
 {
     Console.WriteLine(Usage);
     return args.Length == 0 ? 1 : 0;
+}
+
+args = StripMode(args, out var mode, out var games, out var modeError);
+if (modeError is not null)
+{
+    Console.Error.WriteLine(modeError);
+    return 1;
+}
+
+if (args.Length == 0)
+{
+    Console.WriteLine(Usage);
+    return 1;
 }
 
 var isLatency = args[0].Equals("latency", StringComparison.OrdinalIgnoreCase);
@@ -61,7 +82,9 @@ switch (args[0].ToLowerInvariant())
     case "forward":
         return Commands.Forward(index, cts.Token);
     case "run":
-        return Commands.Run(seconds, cts.Token);
+        return Commands.Run(seconds, mode, games, cts.Token);
+    case "keys":
+        return Commands.Keys(cts.Token);
     case "latency":
         return Commands.Latency(seconds, index, cts.Token);
     case "driver":
@@ -74,4 +97,43 @@ switch (args[0].ToLowerInvariant())
         Console.Error.WriteLine($"Unknown command '{args[0]}'.");
         Console.WriteLine(Usage);
         return 1;
+}
+
+static string[] StripMode(string[] arguments, out KeyboardMode? mode, out List<string>? games, out string? error)
+{
+    mode = null;
+    games = null;
+    error = null;
+    var rest = new List<string>();
+    for (var i = 0; i < arguments.Length; i++)
+    {
+        if (arguments[i].Equals("--game", StringComparison.OrdinalIgnoreCase))
+        {
+            var names = i + 1 < arguments.Length ? arguments[++i] : "";
+            games = [.. names.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)];
+            continue;
+        }
+
+        if (!arguments[i].Equals("--mode", StringComparison.OrdinalIgnoreCase))
+        {
+            rest.Add(arguments[i]);
+            continue;
+        }
+
+        var value = i + 1 < arguments.Length ? arguments[++i] : "";
+        switch (value.ToLowerInvariant())
+        {
+            case "a":
+                mode = KeyboardMode.KeyboardFirst;
+                break;
+            case "b":
+                mode = KeyboardMode.KeyboardAsController;
+                break;
+            default:
+                error = $"Invalid mode '{value}': use a or b.";
+                break;
+        }
+    }
+
+    return [.. rest];
 }

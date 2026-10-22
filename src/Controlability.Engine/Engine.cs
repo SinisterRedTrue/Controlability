@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Controlability.Core.Abstractions;
+using Controlability.Core.Keyboard;
 using Controlability.Core.Mapping;
 using Controlability.Core.Models;
 using Controlability.Core.Profiles;
@@ -32,6 +33,7 @@ public sealed class Engine : IEngine
     private readonly IClock _clock;
     private readonly Settings _settings;
     private readonly IDeviceHider? _hider;
+    private readonly IKeyboardSource? _keyboard;
     private readonly Action<Settings>? _saveSettings;
     private readonly Action<string>? _log;
     private readonly SlotManager _slots;
@@ -64,7 +66,8 @@ public sealed class Engine : IEngine
         Settings settings,
         IDeviceHider? hider = null,
         Action<Settings>? saveSettings = null,
-        Action<string>? log = null)
+        Action<string>? log = null,
+        IKeyboardSource? keyboard = null)
     {
         _sources = sources;
         _sink = sink;
@@ -74,10 +77,12 @@ public sealed class Engine : IEngine
         _hider = hider;
         _saveSettings = saveSettings;
         _log = log;
+        _keyboard = keyboard;
 
         _slots = new SlotManager(clock, settings.SlotPolicy, TimeSpan.FromSeconds(settings.GracePeriodSeconds), settings.RememberedSlots)
         {
             ReserveFirstSlot = settings.Mode == KeyboardMode.KeyboardAsController,
+            KeyboardDevice = settings.Mode == KeyboardMode.KeyboardAsController ? KeyboardPad.Id : null,
         };
         _slots.RememberedChanged += OnRememberedChanged;
 
@@ -95,6 +100,15 @@ public sealed class Engine : IEngine
             source.DeviceRemoved += id => _deviceEvents.Enqueue((captured, null, id));
         }
 
+        if (keyboard is not null)
+        {
+            // Raised only while Mode B is on. DeviceAdded/Removed come from the engine thread, the rest from workers.
+            keyboard.DeviceAdded += info => _deviceEvents.Enqueue((keyboard, info, null));
+            keyboard.DeviceRemoved += id => _deviceEvents.Enqueue((keyboard, null, id));
+            keyboard.PanicRequested += OnPanic;
+            keyboard.Diagnostic += message => _log?.Invoke($"[keyboard] {message}");
+        }
+
         _sink.RumbleRequested += OnRumbleRequested;
         if (hider is not null)
         {
@@ -104,16 +118,11 @@ public sealed class Engine : IEngine
 
     public event Action? Changed;
 
-    /// <summary>Keeps slot 1 free for the keyboard (Mode B). Takes effect for devices connecting from now on.</summary>
-    public bool ReserveFirstSlot
-    {
-        get => _slots.ReserveFirstSlot;
-        set => _commands.Enqueue(() => _slots.ReserveFirstSlot = value);
-    }
-
     public bool IsRunning => _loop?.IsRunning ?? false;
 
     public bool IsPaused => _paused;
+
+    public KeyboardMode Mode => _settings.Mode;
 
     public IReadOnlyList<DeviceInfo> Devices => _devicesSnapshot;
 
@@ -139,7 +148,7 @@ public sealed class Engine : IEngine
                 _hider.WhitelistSelf();
             }
 
-            _commands.Enqueue(() => ApplyEvents(_slots.AutoAssignPresent()));
+            _commands.Enqueue(ApplyMode);
             _loop = new InputLoop(Tick, rate, Shutdown);
             _loop.Start();
         }
@@ -162,6 +171,7 @@ public sealed class Engine : IEngine
         _paused = paused;
         _slots.Paused = paused;
         SyncHiding();
+        SyncKeyboardBlocking();
         if (paused)
         {
             foreach (var slot in _slotRuntimes)
@@ -214,6 +224,23 @@ public sealed class Engine : IEngine
         });
     }
 
+    public void SetMode(KeyboardMode mode)
+    {
+        if (!Enum.IsDefined(mode))
+        {
+            throw new ArgumentOutOfRangeException(nameof(mode));
+        }
+
+        if (_settings.Mode == mode)
+        {
+            return;
+        }
+
+        _settings.Mode = mode;
+        SaveSettings();
+        _commands.Enqueue(ApplyMode);
+    }
+
     public bool TryGetLiveState(DeviceId device, out InputState raw, out XboxState mapped)
     {
         if (_liveLookup.TryGetValue(device, out var runtime))
@@ -244,6 +271,8 @@ public sealed class Engine : IEngine
         {
             source.Dispose();
         }
+
+        _keyboard?.Dispose();
 
         // Shutdown already unhid every slot's device; this also covers a loop that never ran.
         UnhideEverything();
@@ -278,6 +307,8 @@ public sealed class Engine : IEngine
             _commands.Clear();
 
             ApplyEvents(_slots.Reset());
+            SetKeyboardActive(false);
+            ProcessDeviceEvents();
             foreach (var source in _sources)
             {
                 source.Poll(); // flushes the rumble-off requests
@@ -301,6 +332,11 @@ public sealed class Engine : IEngine
         foreach (var source in _sources)
         {
             source.Poll();
+        }
+
+        if (_keyboard is { IsActive: true })
+        {
+            _keyboard.Poll();
         }
 
         ProcessDeviceEvents();
@@ -409,6 +445,8 @@ public sealed class Engine : IEngine
 
             MarkDirty();
         }
+
+        SyncKeyboardBlocking();
     }
 
     private bool HidingWanted => _settings.HidHideEnabled && _hider is { IsAvailable: true };
@@ -561,6 +599,11 @@ public sealed class Engine : IEngine
         var slot = _slotRuntimes[slotIndex];
         slot.Profile = profile;
         _slots.SetProfileId(slotIndex, profile.Id);
+        if (runtime.Info.Id == KeyboardPad.Id)
+        {
+            _keyboard?.SetBindings(CompileBindings(profile));
+        }
+
         try
         {
             runtime.Mapping = ProfileMapper.ToMappingSettings(profile);
@@ -605,6 +648,11 @@ public sealed class Engine : IEngine
     private void OnRememberedChanged()
     {
         _settings.RememberedSlots = new Dictionary<string, int>(_slots.Remembered);
+        SaveSettings();
+    }
+
+    private void SaveSettings()
+    {
         if (_saveSettings is null)
         {
             return;
@@ -616,8 +664,77 @@ public sealed class Engine : IEngine
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            _log?.Invoke($"Could not save the remembered slots: {ex.Message}");
+            _log?.Invoke($"Could not save the settings: {ex.Message}");
         }
+    }
+
+    /// <summary>
+    /// Puts the engine into <see cref="Settings.Mode"/>: frees every slot (the pads disconnect and the keyboard keys are
+    /// released), starts or stops the keyboard pad, then fills the slots again. Pads connect lowest slot first, so
+    /// Windows hands out the XInput players in slot order. Runs on the input thread.
+    /// </summary>
+    private void ApplyMode()
+    {
+        var modeB = _settings.Mode == KeyboardMode.KeyboardAsController;
+        ApplyEvents(_slots.Reset());
+        _slots.ReserveFirstSlot = modeB;
+        _slots.KeyboardDevice = modeB ? KeyboardPad.Id : null;
+
+        SetKeyboardActive(modeB);
+
+        // The keyboard announced (or withdrew) itself just now; handle that before the controllers pick their slots, so
+        // the keyboard pad takes slot 1 and is connected first.
+        ProcessDeviceEvents();
+        ApplyEvents(_slots.AutoAssignPresent());
+        MarkDirty();
+    }
+
+    private void SetKeyboardActive(bool active)
+    {
+        if (_keyboard is null || _keyboard.IsActive == active)
+        {
+            return;
+        }
+
+        try
+        {
+            if (active)
+            {
+                _keyboard.Start(CompileBindings(_profiles.FindFor(KeyboardPad.Info, null)), _settings.KeyboardDevice, [.. _settings.KeyboardTargetProcesses]);
+            }
+            else
+            {
+                _keyboard.Stop();
+            }
+        }
+        catch (Exception ex)
+        {
+            _log?.Invoke($"Keyboard mode could not be {(active ? "started" : "stopped")}: {ex.Message}");
+        }
+    }
+
+    private KeyBindings CompileBindings(Profile profile)
+        => KeyBindings.From(profile.Keyboard, message => _log?.Invoke($"{message} (profile \"{profile.Id}\")"));
+
+    /// <summary>Keys are swallowed only while the keyboard pad is in a slot and the engine is not paused.</summary>
+    private void SyncKeyboardBlocking()
+    {
+        if (_keyboard is { IsActive: true })
+        {
+            _keyboard.Blocking = !_paused && _slots.FindSlot(KeyboardPad.Id) is not null;
+        }
+    }
+
+    /// <summary>
+    /// Ctrl+Alt+Pause. The keyboard is already free (the hook switched blocking off itself); this only makes the engine
+    /// catch up. Runs on a worker thread, so it touches nothing but the settings and the command queue.
+    /// </summary>
+    private void OnPanic()
+    {
+        _log?.Invoke("Panic hotkey pressed: switching to keyboard-first co-op.");
+        _settings.Mode = KeyboardMode.KeyboardFirst;
+        SaveSettings();
+        _commands.Enqueue(ApplyMode);
     }
 
     private void RebuildDeviceViews()

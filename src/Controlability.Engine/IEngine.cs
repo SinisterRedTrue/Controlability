@@ -1,4 +1,5 @@
 using Controlability.Core.Models;
+using Controlability.Core.Settings;
 
 namespace Controlability.Engine;
 
@@ -35,6 +36,9 @@ public interface IEngine : IDisposable
 
     bool IsPaused { get; }
 
+    /// <summary>Keyboard-first co-op (Mode A) or keyboard-as-controller (Mode B).</summary>
+    KeyboardMode Mode { get; }
+
     /// <summary>Snapshot of the connected devices.</summary>
     IReadOnlyList<DeviceInfo> Devices { get; }
 
@@ -61,6 +65,12 @@ public interface IEngine : IDisposable
     void Unassign(int slot);
 
     void SetProfile(int slot, string profileId);
+
+    /// <summary>
+    /// Switches the keyboard mode at runtime and saves it. All pads are released and reconnected in slot order, because
+    /// games read the player order at connect time. Mode B puts the keyboard pad in slot 1.
+    /// </summary>
+    void SetMode(KeyboardMode mode);
 
     /// <summary>
     /// Latest raw and mapped state of a device, for the live test panel. Safe from any thread, takes no lock on the

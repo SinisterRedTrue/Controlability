@@ -1,6 +1,7 @@
 using Controlability.Core.Abstractions;
 using Controlability.Core.Profiles;
 using Controlability.Core.Settings;
+using Controlability.Input.Keyboard;
 using Controlability.Input.Sdl;
 using Controlability.Output.ViGEm;
 using Controlability.Platform;
@@ -63,6 +64,7 @@ public static class EngineServiceCollectionExtensions
             source.Diagnostic += message => options.Log?.Invoke($"[sdl] {message}");
             return source;
         }));
+        services.TryAddSingleton<IKeyboardSource>(provider => new RawInputKeyboardSource(provider.GetRequiredService<IClock>()));
         services.TryAddSingleton<IEngine>(provider =>
         {
             var settings = provider.GetRequiredService<Settings>();
@@ -76,7 +78,8 @@ public static class EngineServiceCollectionExtensions
                 settings,
                 provider.GetRequiredService<IDeviceHider>(),
                 options.PersistSettings ? store.Save : null,
-                options.Log);
+                options.Log,
+                provider.GetRequiredService<IKeyboardSource>());
         });
         return services;
     }

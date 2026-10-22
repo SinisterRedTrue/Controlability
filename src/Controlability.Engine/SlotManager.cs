@@ -58,6 +58,12 @@ public sealed class SlotManager
     /// <summary>Keeps slot 0 free for the keyboard: Auto and Remember skip it. An explicit <see cref="Assign"/> may still use it.</summary>
     public bool ReserveFirstSlot { get; set; }
 
+    /// <summary>
+    /// The keyboard pad (Mode B). It always takes slot 0, whatever the policy; null in Mode A. Controllers then start at
+    /// slot 1 because <see cref="ReserveFirstSlot"/> is on.
+    /// </summary>
+    public DeviceId? KeyboardDevice { get; set; }
+
     public bool Paused { get; set; }
 
     /// <summary>Stable device id to last slot. Raised <see cref="RememberedChanged"/> when it changes.</summary>
@@ -136,6 +142,11 @@ public sealed class SlotManager
 
     private IReadOnlyList<SlotEvent> TryAutoAssign(DeviceId device)
     {
+        if (KeyboardDevice == device)
+        {
+            return _slots[0].Device is null ? Occupy(device, 0, []) : [];
+        }
+
         if (Policy == SlotPolicy.Manual)
         {
             return [];

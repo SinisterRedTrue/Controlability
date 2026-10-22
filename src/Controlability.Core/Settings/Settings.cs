@@ -46,6 +46,15 @@ public sealed record Settings
 
     public KeyboardMode Mode { get; set; } = KeyboardMode.KeyboardFirst;
 
+    /// <summary>Mode B: id of the one keyboard that drives the keyboard pad (see the CLI <c>keys</c> command), or "any".</summary>
+    public string KeyboardDevice { get; set; } = "any";
+
+    /// <summary>
+    /// Mode B: processes (with or without ".exe") whose window must have the focus for keys to be swallowed and the
+    /// keyboard pad to listen. Empty: nothing is ever swallowed, so the PC stays usable.
+    /// </summary>
+    public List<string> KeyboardTargetProcesses { get; set; } = [];
+
     public SlotPolicy SlotPolicy { get; set; } = SlotPolicy.Auto;
 
     /// <summary>Engine polling rate; 1000, 500 or 250.</summary>

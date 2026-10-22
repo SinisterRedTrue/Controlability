@@ -55,12 +55,31 @@ internal static partial class Commands
     }
 
     /// <summary>Full engine with the saved settings (auto-assign by default). Prints slot changes and the CPU used.</summary>
-    public static int Run(int seconds, CancellationToken cancel)
+    public static int Run(int seconds, KeyboardMode? mode, List<string>? games, CancellationToken cancel)
     {
-        using var provider = BuildEngine(null, persist: true);
+        // --mode and --game are for this run only: do not let the saved slots write them into the settings.
+        var persist = mode is null && games is null;
+        using var provider = BuildEngine(
+            settings =>
+            {
+                settings.Mode = mode ?? settings.Mode;
+                settings.KeyboardTargetProcesses = games ?? settings.KeyboardTargetProcesses;
+            },
+            persist);
         var engine = provider.GetRequiredService<IEngine>();
         var drivers = engine.DriverStatus;
         Console.WriteLine($"ViGEmBus: {(drivers.ViGEmAvailable ? "available" : "NOT available (no virtual pads)")} | HidHide: {(drivers.HidHideAvailable ? "available" : "not available")}");
+
+        Console.WriteLine(engine.Mode == KeyboardMode.KeyboardAsController
+            ? "Mode B: keyboard + mouse are pad 1. Panic key: Ctrl+Alt+Pause (turns Mode B off at once)."
+            : "Mode A: keyboard and mouse stay with the game.");
+        if (engine.Mode == KeyboardMode.KeyboardAsController)
+        {
+            var targets = provider.GetRequiredService<Settings>().KeyboardTargetProcesses;
+            Console.WriteLine(targets.Count == 0
+                ? "No --game given: no key or mouse button is swallowed, the keyboard pad listens everywhere."
+                : $"Capturing only while the foreground window is: {string.Join(", ", targets)}.");
+        }
 
         var changed = 0;
         engine.Changed += () => Interlocked.Exchange(ref changed, 1);
