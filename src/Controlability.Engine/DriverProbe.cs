@@ -9,6 +9,7 @@ public readonly record struct DriverInfo(bool ViGEmInstalled, string ViGEmVersio
 /// <summary>Looks at the drivers on demand (the wizard re-checks every 2 s, the diagnostics read it once).</summary>
 public interface IDriverProbe
 {
+    /// <summary>Reads the driver state. May take seconds (it can start HidHideCLI.exe): call it off the UI thread.</summary>
     DriverInfo Read();
 }
 
@@ -16,11 +17,27 @@ public sealed class DriverProbe : IDriverProbe
 {
     private const string Unknown = "unknown";
 
+    // HidHideCLI.exe can take several seconds per call on some PCs and the version cannot change while we run,
+    // so a version that was read once is not asked for again (the wizard polls every 2 s).
+    private string? _hidHideVersion;
+
     public DriverInfo Read()
     {
         var vigem = ViGEmDriverCheck.Check();
         var hidHide = HidHideCli.Locate();
-        return new DriverInfo(vigem.IsInstalled, vigem.Version, hidHide is not null, hidHide is null ? Unknown : ReadHidHideVersion(hidHide));
+        if (hidHide is null)
+        {
+            _hidHideVersion = null;
+            return new DriverInfo(vigem.IsInstalled, vigem.Version, false, Unknown);
+        }
+
+        var version = _hidHideVersion ??= ReadHidHideVersion(hidHide);
+        if (version == Unknown)
+        {
+            _hidHideVersion = null;
+        }
+
+        return new DriverInfo(vigem.IsInstalled, vigem.Version, true, version);
     }
 
     private static string ReadHidHideVersion(string exePath)

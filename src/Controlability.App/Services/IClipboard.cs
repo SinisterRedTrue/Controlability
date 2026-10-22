@@ -2,6 +2,7 @@ using System.Windows;
 
 namespace Controlability.App.Services;
 
+/// <summary>The Windows clipboard, behind an interface so view models can be tested.</summary>
 public interface IClipboard
 {
     /// <summary>Puts the text on the clipboard. Returns false (and does not throw) if another app holds the clipboard.</summary>

@@ -3,9 +3,13 @@ using Controlability.Core.Settings;
 
 namespace Controlability.Engine;
 
+/// <summary>What a player slot is doing right now.</summary>
 public enum SlotState
 {
+    /// <summary>No device and no virtual pad.</summary>
     Empty,
+
+    /// <summary>A device drives the slot's virtual pad.</summary>
     Active,
 
     /// <summary>The device vanished; the virtual pad stays connected until the grace period ends.</summary>
@@ -15,6 +19,12 @@ public enum SlotState
     Paused,
 }
 
+/// <summary>One player slot as the UI shows it.</summary>
+/// <param name="Index">Slot number, 0..3 (Player 1..4).</param>
+/// <param name="Device">Stable id of the assigned device, or null.</param>
+/// <param name="DeviceName">Display name of the assigned device, or null.</param>
+/// <param name="ProfileId">Profile in use for this slot, or null.</param>
+/// <param name="State">Empty, active, waiting for a reconnect, or paused.</param>
 /// <param name="XInputIndex">
 /// XInput user index (0..3) of the slot's virtual pad. Windows assigns it in connect order, so it differs from
 /// <paramref name="Index"/> when a lower slot was empty while this one was connected. Null until known.
@@ -27,13 +37,16 @@ public sealed record SlotStatus(
     SlotState State,
     int? XInputIndex);
 
+/// <summary>Whether the two drivers can be used. Without ViGEmBus nothing works; without HidHide only hiding does not.</summary>
 public readonly record struct DriverStatus(bool ViGEmAvailable, bool HidHideAvailable);
 
 /// <summary>The only thing the UI and the CLI talk to.</summary>
 public interface IEngine : IDisposable
 {
+    /// <summary>The input thread is running.</summary>
     bool IsRunning { get; }
 
+    /// <summary>Emulation is paused (see <see cref="Pause"/>).</summary>
     bool IsPaused { get; }
 
     /// <summary>Keyboard-first co-op (Mode A) or keyboard-as-controller (Mode B).</summary>
@@ -48,6 +61,7 @@ public interface IEngine : IDisposable
     /// <summary>Snapshot of the 4 slots.</summary>
     IReadOnlyList<SlotStatus> Slots { get; }
 
+    /// <summary>Which drivers are available (checked when the engine was built).</summary>
     DriverStatus DriverStatus { get; }
 
     /// <summary>
@@ -65,17 +79,22 @@ public interface IEngine : IDisposable
     /// <summary>Raised on the input thread when devices or slots changed. The UI must marshal to its own thread.</summary>
     event Action? Changed;
 
+    /// <summary>Starts the input thread. Does not block on HidHide; hiding runs on the input thread.</summary>
     void Start();
 
+    /// <summary>Stops the input thread, removes every virtual pad and gives every hidden controller back.</summary>
     void Stop();
 
     /// <summary>Paused: all assigned pads are held at neutral; devices keep their slots.</summary>
     void Pause(bool paused);
 
+    /// <summary>Puts a device on a slot (0..3).</summary>
     void Assign(DeviceId device, int slot);
 
+    /// <summary>Empties a slot: its virtual pad is removed and its controller is shown to games again.</summary>
     void Unassign(int slot);
 
+    /// <summary>Uses a stored profile for the slot's device.</summary>
     void SetProfile(int slot, string profileId);
 
     /// <summary>

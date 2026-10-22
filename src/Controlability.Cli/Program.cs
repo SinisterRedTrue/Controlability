@@ -15,8 +15,9 @@ const string Usage = """
                        changes and the CPU used; stops after [seconds] (default: until Ctrl+C).
                        --mode b = keyboard-as-controller: keyboard + mouse become pad 1 (panic key
                        Ctrl+Alt+Pause), controllers start at pad 2. Not saved to the settings.
-                       --game <process[,process]> = capture only while that game has the focus (for example
-                       --game MinecraftDungeons). Without it Mode B swallows no keys, so the PC stays usable.
+                       --game <process[,process]> = capture only while that game has the focus. Use the
+                       name Task Manager > Details shows for the running game, with or without .exe.
+                       Without it Mode B swallows no keys, so the PC stays usable.
       keys             Print raw keyboard events with the id of the keyboard they came from, to pick the
                        keyboard for Settings.KeyboardDevice (Ctrl+C to quit). Captures nothing.
       latency [seconds] [index]

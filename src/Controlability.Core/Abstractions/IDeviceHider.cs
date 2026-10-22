@@ -2,6 +2,7 @@ using Controlability.Core.Models;
 
 namespace Controlability.Core.Abstractions;
 
+/// <summary>Hides physical controllers from games (HidHide), so a game only sees the virtual pad.</summary>
 public interface IDeviceHider
 {
     /// <summary>False when HidHide is not installed.</summary>

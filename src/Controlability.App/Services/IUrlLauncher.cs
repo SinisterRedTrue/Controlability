@@ -2,6 +2,7 @@ using System.Diagnostics;
 
 namespace Controlability.App.Services;
 
+/// <summary>Opens links and folders with the program Windows has chosen for them.</summary>
 public interface IUrlLauncher
 {
     /// <summary>Opens the URL in the default browser. Never throws.</summary>

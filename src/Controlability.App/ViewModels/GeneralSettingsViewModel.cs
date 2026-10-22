@@ -243,7 +243,7 @@ public sealed partial class GeneralSettingsViewModel : ObservableObject
     private void OpenLogs() => _launcher.Open(_log.Folder);
 
     [RelayCommand]
-    private void CopyDiagnostics() => StatusText = _diagnostics.CopyToClipboard() ? Strings.DiagnosticsCopied : Strings.DiagnosticsCopyFailed;
+    private async Task CopyDiagnosticsAsync() => StatusText = await _diagnostics.CopyToClipboardAsync() ? Strings.DiagnosticsCopied : Strings.DiagnosticsCopyFailed;
 
     [RelayCommand]
     private void OpenLink(string? url)

@@ -114,7 +114,7 @@
   <data name="GameNone" xml:space="preserve"><value>No game set</value></data>
   <data name="GameAdd" xml:space="preserve"><value>Add</value></data>
   <data name="GameRemove" xml:space="preserve"><value>Remove</value></data>
-  <data name="GameNameHint" xml:space="preserve"><value>Program name, for example Dungeons</value></data>
+  <data name="GameNameHint" xml:space="preserve"><value>Program name as Task Manager shows it, with or without .exe</value></data>
   <data name="GameRunning" xml:space="preserve"><value>Running programs</value></data>
   <data name="GameRefresh" xml:space="preserve"><value>Refresh list</value></data>
   <data name="GameAddSelected" xml:space="preserve"><value>Add selected</value></data>

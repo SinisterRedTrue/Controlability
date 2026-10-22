@@ -211,9 +211,9 @@ public sealed class GeneralSettingsViewModelTests : IDisposable
     }
 
     [Fact]
-    public void Copy_diagnostics_puts_the_report_on_the_clipboard()
+    public async Task Copy_diagnostics_puts_the_report_on_the_clipboard()
     {
-        ViewModel.CopyDiagnosticsCommand.Execute(null);
+        await ViewModel.CopyDiagnosticsCommand.ExecuteAsync(null);
 
         _clipboard.Text.Should().Contain("ViGEmBus: 1.22.0").And.Contain("HidHide: 1.5.0");
         ViewModel.StatusText.Should().NotBeEmpty();
@@ -264,11 +264,12 @@ public sealed class DiagnosticsServiceTests : IDisposable
     }
 
     [Fact]
-    public void A_clipboard_failure_is_reported_not_thrown()
+    public async Task A_clipboard_failure_is_reported_not_thrown()
     {
         var service = new DiagnosticsService(new FakeEngine(), new FakeDriverProbe(), new Settings(), new RollingFileLog(_logFolder), new FakeClipboard { Succeeds = false });
 
         service.CopyToClipboard().Should().BeFalse();
+        (await service.CopyToClipboardAsync()).Should().BeFalse();
     }
 }
 

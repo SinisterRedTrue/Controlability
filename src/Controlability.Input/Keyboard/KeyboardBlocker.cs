@@ -22,8 +22,8 @@ namespace Controlability.Input.Keyboard;
 /// </para>
 /// </summary>
 /// <remarks>
-/// TODO: optional "lock cursor to window center" (ClipCursor/SetCursorPos) for games that read the absolute cursor.
-/// Not part of phase 8.
+/// Not done in v1: locking the cursor to the window center (ClipCursor/SetCursorPos) for games that read the absolute
+/// cursor. Mouse movement is never swallowed, only turned into right-stick movement.
 /// </remarks>
 public sealed class KeyboardBlocker : IDisposable
 {

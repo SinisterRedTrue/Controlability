@@ -51,5 +51,12 @@ public sealed class DiagnosticsService(IEngine engine, IDriverProbe drivers, Set
         return text.ToString();
     }
 
+    /// <summary>Builds the report and copies it. For the crash dialog, where nothing else is running.</summary>
     public bool CopyToClipboard() => clipboard.SetText(Build());
+
+    /// <summary>
+    /// Builds the report on a worker thread (reading the drivers can take seconds) and copies it from the calling
+    /// (UI) thread.
+    /// </summary>
+    public async Task<bool> CopyToClipboardAsync() => clipboard.SetText(await Task.Run(Build));
 }
