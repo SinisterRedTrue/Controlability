@@ -43,6 +43,37 @@ public sealed class KeyboardModeTests : IDisposable
     private string?[] SlotDevices() => [.. Engine.Slots.Select(s => s.Device?.Value)];
 
     [Fact]
+    public void Changing_the_target_games_saves_them_and_restarts_the_keyboard_pad_with_them()
+    {
+        Plug(Pad1);
+        Engine.SetMode(KeyboardMode.KeyboardAsController);
+        Engine.Tick();
+
+        Engine.SetKeyboardTargets(["Dungeons"]);
+        Engine.Tick();
+
+        _keyboard.StartCount.Should().Be(2);
+        _keyboard.TargetProcesses.Should().Equal("Dungeons");
+        _settings.KeyboardTargetProcesses.Should().Equal("Dungeons");
+        _saved.Should().Contain(s => s.KeyboardTargetProcesses.SequenceEqual(new[] { "Dungeons" }));
+        SlotDevices().Should().Equal(KeyboardPad.Id.Value, "pad1", null, null);
+    }
+
+    [Fact]
+    public void Changing_the_target_games_in_mode_A_only_saves_them()
+    {
+        Plug(Pad1);
+        Engine.Tick();
+
+        Engine.SetKeyboardTargets(["Dungeons"]);
+        Engine.Tick();
+
+        _keyboard.StartCount.Should().Be(0);
+        _settings.KeyboardTargetProcesses.Should().Equal("Dungeons");
+        SlotDevices().Should().Equal("pad1", null, null, null);
+    }
+
+    [Fact]
     public void Mode_A_never_touches_the_keyboard()
     {
         Plug(Pad1);
@@ -148,6 +179,47 @@ public sealed class KeyboardModeTests : IDisposable
         var sent = _sink.LastSubmitted(0);
         sent.IsPressed(XboxButton.A).Should().BeTrue();
         sent.LeftX.Should().BeGreaterThan(30000);
+    }
+
+    [Fact]
+    public void The_normal_keyboard_style_keeps_the_slot_but_sends_neutral_and_swallows_nothing()
+    {
+        _settings.KeyboardStyle = KeyboardInputStyle.NormalKeyboard;
+        Plug(Pad1);
+        Engine.SetMode(KeyboardMode.KeyboardAsController);
+        Engine.Tick();
+
+        _keyboard.SetState(new InputState { Buttons = ButtonId.South, LeftX = 1f });
+        Engine.Tick();
+
+        SlotDevices().Should().Equal(KeyboardPad.Id.Value, "pad1", null, null);
+        _sink.Connected.Should().Contain(0, "the game still counts the keyboard's pad as connected");
+        var sent = _sink.LastSubmitted(0);
+        sent.IsPressed(XboxButton.A).Should().BeFalse();
+        sent.LeftX.Should().Be(0);
+        _keyboard.Blocking.Should().BeFalse("the real keys must reach the game");
+    }
+
+    [Fact]
+    public void Switching_the_style_at_runtime_toggles_blocking_and_input_without_reconnecting_pads()
+    {
+        Engine.SetMode(KeyboardMode.KeyboardAsController);
+        Engine.Tick();
+        _keyboard.Blocking.Should().BeTrue();
+        var connects = _sink.Connected.Count;
+
+        Engine.SetKeyboardStyle(KeyboardInputStyle.NormalKeyboard);
+        Engine.Tick();
+
+        Engine.KeyboardStyle.Should().Be(KeyboardInputStyle.NormalKeyboard);
+        _keyboard.Blocking.Should().BeFalse();
+        _saved.Should().Contain(s => s.KeyboardStyle == KeyboardInputStyle.NormalKeyboard);
+        _sink.Connected.Count.Should().Be(connects);
+
+        Engine.SetKeyboardStyle(KeyboardInputStyle.XboxController);
+        Engine.Tick();
+
+        _keyboard.Blocking.Should().BeTrue();
     }
 
     [Fact]

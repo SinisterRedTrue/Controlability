@@ -12,6 +12,11 @@ namespace Controlability.Input.Keyboard;
 /// removes a hook whose callback takes too long. Mouse <i>movement</i> is never touched.
 /// </para>
 /// <para>
+/// A <c>WH_MOUSE_LL</c> hook is called for every mouse move on the whole system, even when it swallows nothing, and a
+/// 1000 Hz mouse in a game makes that a context switch per event (visible as FPS drops). So the mouse hook is only
+/// installed while it can swallow something: blocking is on and a mouse button is bound.
+/// </para>
+/// <para>
 /// <b>Panic hotkey Ctrl+Alt+Pause</b> is detected inside the keyboard callback itself: it turns blocking off at once,
 /// before anyone else (the engine thread may be stuck), and only then tells the owner.
 /// </para>
@@ -23,6 +28,7 @@ namespace Controlability.Input.Keyboard;
 public sealed class KeyboardBlocker : IDisposable
 {
     private const uint ReinstallMessage = WM_APP + 1;
+    private const uint SyncMouseHookMessage = WM_APP + 2;
 
     private readonly object _lifecycle = new();
     private readonly KeySwallowTracker _tracker = new();
@@ -61,10 +67,22 @@ public sealed class KeyboardBlocker : IDisposable
     public bool Blocking
     {
         get => _blocking;
-        set => _blocking = value && !_panicked;
+        set
+        {
+            var blocking = value && !_panicked;
+            if (_blocking != blocking)
+            {
+                _blocking = blocking;
+                PostSyncMouseHook();
+            }
+        }
     }
 
-    public void SetBindings(KeyBindings bindings) => _bindings = bindings;
+    public void SetBindings(KeyBindings bindings)
+    {
+        _bindings = bindings;
+        PostSyncMouseHook();
+    }
 
     /// <summary>Installs the hooks on a new thread and waits until that worked. Throws if a hook could not be installed.</summary>
     public void Start(KeyBindings bindings)
@@ -171,6 +189,12 @@ public sealed class KeyboardBlocker : IDisposable
                     continue;
                 }
 
+                if (message.message == SyncMouseHookMessage)
+                {
+                    SyncMouseHook();
+                    continue;
+                }
+
                 TranslateMessage(ref message);
                 DispatchMessage(ref message);
             }
@@ -197,15 +221,35 @@ public sealed class KeyboardBlocker : IDisposable
             throw new InvalidOperationException($"SetWindowsHookEx(keyboard) failed ({Marshal.GetLastWin32Error()}).");
         }
 
-        _mouseHook = SetWindowsHookEx(WH_MOUSE_LL, _mouseProc, module, 0);
-        if (_mouseHook == 0)
-        {
-            var error = Marshal.GetLastWin32Error();
-            Uninstall();
-            throw new InvalidOperationException($"SetWindowsHookEx(mouse) failed ({error}).");
-        }
-
         _tracker.Reset();
+        SyncMouseHook();
+    }
+
+    private void PostSyncMouseHook()
+    {
+        var id = _threadId;
+        if (id != 0)
+        {
+            PostThreadMessage(id, SyncMouseHookMessage, 0, 0);
+        }
+    }
+
+    /// <summary>Hook thread only: the mouse hook exists exactly while it could swallow a bound button.</summary>
+    private void SyncMouseHook()
+    {
+        var wanted = _blocking && _bindings.BoundMouseButtons != MouseButtons.None;
+        if (wanted && _mouseHook == 0)
+        {
+            // A failure leaves the buttons unswallowed (the pad still works); the next sync tries again.
+            _mouseHook = SetWindowsHookEx(WH_MOUSE_LL, _mouseProc, GetModuleHandle(null), 0);
+            _tracker.Reset();
+        }
+        else if (!wanted && _mouseHook != 0)
+        {
+            UnhookWindowsHookEx(_mouseHook);
+            _mouseHook = 0;
+            _tracker.Reset();
+        }
     }
 
     private void Uninstall()
@@ -240,6 +284,7 @@ public sealed class KeyboardBlocker : IDisposable
                 // Before anything else: the keyboard is free again right now.
                 _blocking = false;
                 _panicked = true;
+                PostSyncMouseHook();
                 ThreadPool.UnsafeQueueUserWorkItem(static state => state.PanicTriggered?.Invoke(), this, preferLocal: false);
             }
             else if (_blocking && _tracker.DecideKey(_bindings, vk, down, injected))

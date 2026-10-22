@@ -9,6 +9,19 @@ public enum KeyboardMode
     KeyboardAsController,
 }
 
+/// <summary>What the keyboard pad of Mode B sends to the game.</summary>
+public enum KeyboardInputStyle
+{
+    /// <summary>Keys and mouse drive the virtual Xbox pad; the keys are kept from the game.</summary>
+    XboxController,
+
+    /// <summary>
+    /// The keyboard keeps its player slot (the game still counts that pad as connected) but the pad stays neutral and
+    /// nothing is swallowed, so the game reads the real keyboard and mouse with its own default keys.
+    /// </summary>
+    NormalKeyboard,
+}
+
 public enum SlotPolicy
 {
     Auto,
@@ -44,7 +57,13 @@ public sealed record Settings
 
     public bool StartMinimized { get; set; }
 
+    /// <summary>Closing the main window hides it to the tray instead of exiting.</summary>
+    public bool CloseToTray { get; set; } = true;
+
     public KeyboardMode Mode { get; set; } = KeyboardMode.KeyboardFirst;
+
+    /// <summary>Mode B: whether the keyboard acts as an Xbox pad or stays a normal keyboard for the game.</summary>
+    public KeyboardInputStyle KeyboardStyle { get; set; } = KeyboardInputStyle.XboxController;
 
     /// <summary>Mode B: id of the one keyboard that drives the keyboard pad (see the CLI <c>keys</c> command), or "any".</summary>
     public string KeyboardDevice { get; set; } = "any";

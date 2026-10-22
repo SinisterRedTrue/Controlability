@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="AppName" xml:space="preserve"><value>Controlability</value></data>
+  <data name="NavDashboard" xml:space="preserve"><value>Dashboard</value></data>
+  <data name="NavDevices" xml:space="preserve"><value>Devices</value></data>
+  <data name="NavProfiles" xml:space="preserve"><value>Profiles</value></data>
+  <data name="NavSettings" xml:space="preserve"><value>Settings</value></data>
+  <data name="ComingSoonTitle" xml:space="preserve"><value>Coming soon</value></data>
+  <data name="ComingSoonDevices" xml:space="preserve"><value>The Devices page is not built yet. It will list every controller and keyboard with details, a live test panel, and rumble and LED tests.</value></data>
+  <data name="ComingSoonProfiles" xml:space="preserve"><value>The Profiles page is not built yet. It will hold the profile list and the button, stick and trigger editor.</value></data>
+  <data name="ComingSoonSettings" xml:space="preserve"><value>The Settings page is not built yet. Until then, the tray menu and the dashboard cover the daily controls.</value></data>
+  <data name="DashboardTitle" xml:space="preserve"><value>Dashboard</value></data>
+  <data name="PlayerTitle" xml:space="preserve"><value>Player {0}</value></data>
+  <data name="SlotEmptyStatus" xml:space="preserve"><value>Empty</value></data>
+  <data name="SlotActiveStatus" xml:space="preserve"><value>Active</value></data>
+  <data name="SlotWaitingStatus" xml:space="preserve"><value>Waiting for reconnect</value></data>
+  <data name="SlotPausedStatus" xml:space="preserve"><value>Paused</value></data>
+  <data name="SlotEmptyHint" xml:space="preserve"><value>Drag a controller here</value></data>
+  <data name="ProfileLabel" xml:space="preserve"><value>Profile: {0}</value></data>
+  <data name="ProfileNone" xml:space="preserve"><value>none</value></data>
+  <data name="XInputLabel" xml:space="preserve"><value>XInput {0}</value></data>
+  <data name="XInputUnknown" xml:space="preserve"><value>XInput -</value></data>
+  <data name="ConnectionUsb" xml:space="preserve"><value>USB</value></data>
+  <data name="ConnectionBluetooth" xml:space="preserve"><value>Bluetooth</value></data>
+  <data name="ConnectionUnknown" xml:space="preserve"><value></value></data>
+  <data name="BatteryWired" xml:space="preserve"><value>Wired</value></data>
+  <data name="BatteryPercent" xml:space="preserve"><value>{0}%</value></data>
+  <data name="BatteryCharging" xml:space="preserve"><value>{0}% charging</value></data>
+  <data name="BatteryUnknown" xml:space="preserve"><value>Battery unknown</value></data>
+  <data name="TypeGeneric" xml:space="preserve"><value>Generic</value></data>
+  <data name="TypePS4" xml:space="preserve"><value>PS4</value></data>
+  <data name="TypePS5" xml:space="preserve"><value>PS5</value></data>
+  <data name="TypeSwitchPro" xml:space="preserve"><value>Switch</value></data>
+  <data name="TypeXbox" xml:space="preserve"><value>Xbox</value></data>
+  <data name="TypeKeyboard" xml:space="preserve"><value>Keyboard</value></data>
+  <data name="DetectedDevices" xml:space="preserve"><value>Detected devices</value></data>
+  <data name="DetectedDevicesHint" xml:space="preserve"><value>Drag a device onto a player card, or right-click it.</value></data>
+  <data name="DevicesEmptyTitle" xml:space="preserve"><value>No controllers detected</value></data>
+  <data name="DevicesEmptyHint" xml:space="preserve"><value>Plug in a controller or pair one over Bluetooth. It shows up here on its own.</value></data>
+  <data name="DeviceAssigned" xml:space="preserve"><value>On Player {0}</value></data>
+  <data name="DeviceUnassigned" xml:space="preserve"><value>Not assigned</value></data>
+  <data name="AssignToPlayer" xml:space="preserve"><value>Assign to Player {0}</value></data>
+  <data name="MenuUnassign" xml:space="preserve"><value>Unassign</value></data>
+  <data name="MenuChangeProfile" xml:space="preserve"><value>Change profile</value></data>
+  <data name="MenuIdentify" xml:space="preserve"><value>Identify (rumble and blink)</value></data>
+  <data name="MenuNoProfiles" xml:space="preserve"><value>No profiles found</value></data>
+  <data name="ModeLabel" xml:space="preserve"><value>Mode</value></data>
+  <data name="ModeAShort" xml:space="preserve"><value>A</value></data>
+  <data name="ModeBShort" xml:space="preserve"><value>B</value></data>
+  <data name="ModeATitle" xml:space="preserve"><value>Keyboard-first co-op</value></data>
+  <data name="ModeBTitle" xml:space="preserve"><value>Keyboard-as-controller</value></data>
+  <data name="ModeATooltip" xml:space="preserve"><value>Mode A, keyboard-first co-op: the keyboard and mouse go to the game untouched. Controllers become virtual Xbox pads for the other players.</value></data>
+  <data name="ModeBTooltip" xml:space="preserve"><value>Mode B, keyboard-as-controller: the keyboard and mouse act as a virtual Xbox pad in Player 1, for games that only count controllers as local players.</value></data>
+  <data name="PauseEmulation" xml:space="preserve"><value>Pause emulation</value></data>
+  <data name="PauseTooltip" xml:space="preserve"><value>Holds every pad at neutral. Physical controllers are shown to games again while paused.</value></data>
+  <data name="DriverInstalled" xml:space="preserve"><value>{0} is installed</value></data>
+  <data name="DriverMissing" xml:space="preserve"><value>{0} is missing</value></data>
+  <data name="BannerViGEmTitle" xml:space="preserve"><value>ViGEmBus is not installed</value></data>
+  <data name="BannerViGEmText" xml:space="preserve"><value>Without it no virtual Xbox controller can be created, so games cannot see your pads. Install it, then restart Controlability.</value></data>
+  <data name="BannerHidHideTitle" xml:space="preserve"><value>HidHide is not installed</value></data>
+  <data name="BannerHidHideText" xml:space="preserve"><value>Controllers stay visible to games, so some games may see them twice. Everything else works.</value></data>
+  <data name="BannerInstall" xml:space="preserve"><value>Install driver</value></data>
+  <data name="BannerInstallHint" xml:space="preserve"><value>Opens the official release page in your browser</value></data>
+  <data name="TrayOpen" xml:space="preserve"><value>Open Controlability</value></data>
+  <data name="TrayPause" xml:space="preserve"><value>Pause emulation</value></data>
+  <data name="TrayMode" xml:space="preserve"><value>Keyboard mode</value></data>
+  <data name="TrayModeA" xml:space="preserve"><value>A - Keyboard-first co-op</value></data>
+  <data name="TrayModeB" xml:space="preserve"><value>B - Keyboard-as-controller</value></data>
+  <data name="TraySlotEmpty" xml:space="preserve"><value>Player {0}: empty</value></data>
+  <data name="TraySlotFilled" xml:space="preserve"><value>Player {0}: {1}</value></data>
+  <data name="TrayExit" xml:space="preserve"><value>Exit</value></data>
+  <data name="TrayTooltipNormal" xml:space="preserve"><value>Controlability</value></data>
+  <data name="TrayTooltipPaused" xml:space="preserve"><value>Controlability - paused</value></data>
+  <data name="TrayTooltipError" xml:space="preserve"><value>Controlability - ViGEmBus driver missing</value></data>
+  <data name="TrayStillRunningTitle" xml:space="preserve"><value>Controlability is still running</value></data>
+  <data name="TrayStillRunningText" xml:space="preserve"><value>It keeps running in the tray. Use the tray menu to exit.</value></data>
+  <data name="NotifyConnected" xml:space="preserve"><value>{0} connected as Player {1}</value></data>
+  <data name="NotifyConnectedUnassigned" xml:space="preserve"><value>{0} connected</value></data>
+  <data name="NotifyDisconnected" xml:space="preserve"><value>{0} disconnected</value></data>
+  <data name="NotifyTitle" xml:space="preserve"><value>Controlability</value></data>
+  <data name="KeyboardStyleLabel" xml:space="preserve"><value>Keyboard input</value></data>
+  <data name="StyleXboxShort" xml:space="preserve"><value>Xbox controller</value></data>
+  <data name="StyleKeyboardShort" xml:space="preserve"><value>Normal keyboard</value></data>
+  <data name="StyleXboxTooltip" xml:space="preserve"><value>Mode B keyboard input as an Xbox controller: your keys and mouse drive a virtual Xbox pad (see Settings for the keys) and are kept from the game.</value></data>
+  <data name="StyleKeyboardTooltip" xml:space="preserve"><value>Mode B keyboard input as a normal keyboard: the keyboard keeps its player slot, so the game still counts a connected controller, but its pad stays idle and your real keyboard and mouse go to the game with the game's own default keys.</value></data>
+  <data name="StyleOnlyModeB" xml:space="preserve"><value>Only used in Mode B.</value></data>
+  <data name="SettingsTitle" xml:space="preserve"><value>Settings</value></data>
+  <data name="SettingsGeneral" xml:space="preserve"><value>General</value></data>
+  <data name="CloseToTray" xml:space="preserve"><value>Close button hides to the tray</value></data>
+  <data name="CloseToTrayHint" xml:space="preserve"><value>Keeps Controlability running when you close the window. Exit from the tray menu.</value></data>
+  <data name="SettingsGameTitle" xml:space="preserve"><value>Game for keyboard mode (Mode B)</value></data>
+  <data name="SettingsGameHint" xml:space="preserve"><value>Mode B only swallows keys and listens while one of these programs has the focus. With none set, the keyboard pad listens everywhere and the keys also reach the game, which can cause double input.</value></data>
+  <data name="GameNone" xml:space="preserve"><value>No game set</value></data>
+  <data name="GameAdd" xml:space="preserve"><value>Add</value></data>
+  <data name="GameRemove" xml:space="preserve"><value>Remove</value></data>
+  <data name="GameNameHint" xml:space="preserve"><value>Program name, for example Dungeons</value></data>
+  <data name="GameRunning" xml:space="preserve"><value>Running programs</value></data>
+  <data name="GameRefresh" xml:space="preserve"><value>Refresh list</value></data>
+  <data name="GameAddSelected" xml:space="preserve"><value>Add selected</value></data>
+  <data name="SettingsKeysTitle" xml:space="preserve"><value>Keyboard controls (Mode B)</value></data>
+  <data name="SettingsKeysHint" xml:space="preserve"><value>Click Change, then press the new key or a mouse button. Games see an Xbox pad, so these are the keys Controlability turns into pad controls. These keys are used when the keyboard input is set to Xbox controller. Games do not let other programs read their own keybinds, so this list cannot be filled in from the game itself.</value></data>
+  <data name="KeyNotBound" xml:space="preserve"><value>not set</value></data>
+  <data name="KeyChange" xml:space="preserve"><value>Change</value></data>
+  <data name="KeyClear" xml:space="preserve"><value>Clear</value></data>
+  <data name="KeyPressPrompt" xml:space="preserve"><value>Press a key or mouse button for {0}...</value></data>
+  <data name="KeyCancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="KeysReset" xml:space="preserve"><value>Reset to defaults</value></data>
+  <data name="KeysNoProfile" xml:space="preserve"><value>No keyboard profile was found.</value></data>
+  <data name="KeysProfile" xml:space="preserve"><value>Profile: {0}</value></data>
+  <data name="SettingsPadTitle" xml:space="preserve"><value>Controller buttons</value></data>
+  <data name="SettingsPadHint" xml:space="preserve"><value>What each physical button sends to the game as an Xbox control. Change the layout by picking another profile on the dashboard card.</value></data>
+  <data name="PadNone" xml:space="preserve"><value>No controller is connected. Showing the PlayStation layout.</value></data>
+  <data name="PadSummary" xml:space="preserve"><value>{0} - profile: {1}</value></data>
+  <data name="ColXbox" xml:space="preserve"><value>Xbox control</value></data>
+  <data name="ColKeyboard" xml:space="preserve"><value>Keyboard</value></data>
+  <data name="ColController" xml:space="preserve"><value>Controller button</value></data>
+  <data name="PadNotMapped" xml:space="preserve"><value>not mapped</value></data>
+</root>

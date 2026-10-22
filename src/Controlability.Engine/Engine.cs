@@ -19,6 +19,10 @@ public sealed class Engine : IEngine
     /// <summary>Game rumble is refreshed by the game; this only bounds a motor that is never switched off.</summary>
     private const int RumbleDurationMs = 60_000;
 
+    private const int IdentifyRumbleMs = 300;
+    private const int IdentifyBlinkMs = 150;
+    private const int IdentifyBlinks = 3;
+
     private static readonly (byte R, byte G, byte B)[] SlotColors =
     [
         (0, 0, 255), // P1 blue
@@ -44,6 +48,7 @@ public sealed class Engine : IEngine
     private readonly Dictionary<DeviceId, DeviceRuntime> _devices = [];
     private readonly SlotRuntime[] _slotRuntimes = new SlotRuntime[SlotManager.SlotCount];
     private readonly List<int> _padsToConnect = [];
+    private readonly List<IdentifyRun> _identifies = [];
     private readonly HashSet<DeviceId> _hidden = [];
     private readonly object _lifecycle = new();
 
@@ -123,6 +128,8 @@ public sealed class Engine : IEngine
     public bool IsPaused => _paused;
 
     public KeyboardMode Mode => _settings.Mode;
+
+    public KeyboardInputStyle KeyboardStyle => _settings.KeyboardStyle;
 
     public IReadOnlyList<DeviceInfo> Devices => _devicesSnapshot;
 
@@ -224,6 +231,61 @@ public sealed class Engine : IEngine
         });
     }
 
+    public void SetKeyboardStyle(KeyboardInputStyle style)
+    {
+        if (!Enum.IsDefined(style))
+        {
+            throw new ArgumentOutOfRangeException(nameof(style));
+        }
+
+        if (_settings.KeyboardStyle == style)
+        {
+            return;
+        }
+
+        _settings.KeyboardStyle = style;
+        SaveSettings();
+        _commands.Enqueue(() =>
+        {
+            SyncKeyboardBlocking();
+            MarkDirty();
+        });
+    }
+
+    public void SetKeyboardTargets(IReadOnlyList<string> processNames)
+    {
+        ArgumentNullException.ThrowIfNull(processNames);
+        var names = processNames.ToList();
+        _commands.Enqueue(() =>
+        {
+            _settings.KeyboardTargetProcesses = names;
+            SaveSettings();
+            if (_settings.Mode == KeyboardMode.KeyboardAsController)
+            {
+                SetKeyboardActive(false);
+                ApplyMode();
+            }
+        });
+    }
+
+    public void Identify(int slot)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(slot);
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(slot, SlotManager.SlotCount);
+        _commands.Enqueue(() =>
+        {
+            if (_slotRuntimes[slot].Device is not { } runtime)
+            {
+                return;
+            }
+
+            runtime.Source.SetRumble(runtime.Info.Id, 255, 255, IdentifyRumbleMs);
+            _identifies.RemoveAll(run => run.Slot == slot);
+            _identifies.Add(new IdentifyRun(slot, runtime, _clock.Ticks));
+            SetIdentifyLed(runtime, on: true);
+        });
+    }
+
     public void SetMode(KeyboardMode mode)
     {
         if (!Enum.IsDefined(mode))
@@ -305,6 +367,7 @@ public sealed class Engine : IEngine
         {
             // Commands queued before Stop must not leak into the next Start.
             _commands.Clear();
+            _identifies.Clear();
 
             ApplyEvents(_slots.Reset());
             SetKeyboardActive(false);
@@ -328,6 +391,8 @@ public sealed class Engine : IEngine
         {
             command();
         }
+
+        UpdateIdentifies();
 
         foreach (var source in _sources)
         {
@@ -378,6 +443,12 @@ public sealed class Engine : IEngine
         {
             if (device.Source.TryGetState(device.Info.Id, out var raw))
             {
+                if (_settings.KeyboardStyle == KeyboardInputStyle.NormalKeyboard && device.Info.Id == KeyboardPad.Id)
+                {
+                    // The keyboard goes to the game as a keyboard; its pad only holds the player slot.
+                    raw = InputState.Neutral;
+                }
+
                 device.Mapped = Mapper.Map(in raw, device.Mapping);
                 device.HasState = true;
                 device.Live.Write(in raw, in device.Mapped);
@@ -617,6 +688,34 @@ public sealed class Engine : IEngine
         ApplyLed(slotIndex, runtime, profile);
     }
 
+    private void UpdateIdentifies()
+    {
+        for (var i = _identifies.Count - 1; i >= 0; i--)
+        {
+            var run = _identifies[i];
+            var phase = (int)(_clock.ToMs(_clock.Ticks - run.StartTicks) / IdentifyBlinkMs);
+            if (phase >= IdentifyBlinks * 2)
+            {
+                _identifies.RemoveAt(i);
+                ApplyLed(run.Slot, run.Runtime, _slotRuntimes[run.Slot].Profile);
+            }
+            else if (phase != run.Phase)
+            {
+                run.Phase = phase;
+                SetIdentifyLed(run.Runtime, on: phase % 2 == 0);
+            }
+        }
+    }
+
+    private static void SetIdentifyLed(DeviceRuntime runtime, bool on)
+    {
+        if (runtime.Info.Capabilities.HasFlag(DeviceCapabilities.Led))
+        {
+            var level = on ? (byte)255 : (byte)0;
+            runtime.Source.SetLed(runtime.Info.Id, level, level, level);
+        }
+    }
+
     private void ApplyLed(int slotIndex, DeviceRuntime runtime, Profile? profile)
     {
         if (!runtime.Info.Capabilities.HasFlag(DeviceCapabilities.Led))
@@ -716,12 +815,17 @@ public sealed class Engine : IEngine
     private KeyBindings CompileBindings(Profile profile)
         => KeyBindings.From(profile.Keyboard, message => _log?.Invoke($"{message} (profile \"{profile.Id}\")"));
 
-    /// <summary>Keys are swallowed only while the keyboard pad is in a slot and the engine is not paused.</summary>
+    /// <summary>
+    /// Keys are swallowed only while the keyboard pad is in a slot, the engine is not paused and the keyboard acts as an
+    /// Xbox pad (not as a normal keyboard).
+    /// </summary>
     private void SyncKeyboardBlocking()
     {
         if (_keyboard is { IsActive: true })
         {
-            _keyboard.Blocking = !_paused && _slots.FindSlot(KeyboardPad.Id) is not null;
+            _keyboard.Blocking = !_paused
+                && _settings.KeyboardStyle == KeyboardInputStyle.XboxController
+                && _slots.FindSlot(KeyboardPad.Id) is not null;
         }
     }
 
@@ -807,6 +911,17 @@ public sealed class Engine : IEngine
         && a.LeftY == b.LeftY
         && a.RightX == b.RightX
         && a.RightY == b.RightY;
+
+    private sealed class IdentifyRun(int slot, DeviceRuntime runtime, long startTicks)
+    {
+        public int Slot { get; } = slot;
+
+        public DeviceRuntime Runtime { get; } = runtime;
+
+        public long StartTicks { get; } = startTicks;
+
+        public int Phase { get; set; }
+    }
 
     private sealed class SlotRuntime
     {

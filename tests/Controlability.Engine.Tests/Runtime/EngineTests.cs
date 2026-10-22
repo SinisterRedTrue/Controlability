@@ -211,6 +211,42 @@ public sealed class EngineTests : IDisposable
     }
 
     [Fact]
+    public void Identify_RumblesFor300Ms_BlinksTheLed_AndRestoresTheSlotColor()
+    {
+        Plug(Pad1);
+        Engine.Tick();
+        _source.Rumbles.Clear();
+        _source.Leds.Clear();
+
+        Engine.Identify(0);
+        Engine.Tick();
+
+        _source.Rumbles.Should().ContainSingle(r => r.Id == Pad1.Id && r.DurationMs == 300);
+        _source.Leds.Should().Equal((Pad1.Id, (byte)255, (byte)255, (byte)255));
+
+        _clock.Advance(TimeSpan.FromMilliseconds(160));
+        Engine.Tick();
+        _source.Leds.Last().Should().Be((Pad1.Id, (byte)0, (byte)0, (byte)0));
+
+        _clock.Advance(TimeSpan.FromMilliseconds(800));
+        Engine.Tick();
+        _source.Leds.Last().Should().Be((Pad1.Id, (byte)0, (byte)0, (byte)255));
+    }
+
+    [Fact]
+    public void Identify_OnAnEmptySlot_DoesNothing()
+    {
+        Plug(Pad1);
+        Engine.Tick();
+        _source.Rumbles.Clear();
+
+        Engine.Identify(2);
+        Engine.Tick();
+
+        _source.Rumbles.Should().BeEmpty();
+    }
+
+    [Fact]
     public void Led_IsSkippedForDevicesWithoutALight()
     {
         Plug(FakeInputSource.MakeDevice("plain", DeviceCapabilities.None));

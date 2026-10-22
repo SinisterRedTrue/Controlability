@@ -11,6 +11,7 @@ public class SettingsStoreTests
 
         settings.StartWithWindows.Should().BeFalse();
         settings.StartMinimized.Should().BeFalse();
+        settings.CloseToTray.Should().BeTrue();
         settings.Mode.Should().Be(KeyboardMode.KeyboardFirst);
         settings.SlotPolicy.Should().Be(SlotPolicy.Auto);
         settings.PollingRateHz.Should().Be(1000);

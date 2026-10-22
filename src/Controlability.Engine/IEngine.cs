@@ -39,6 +39,9 @@ public interface IEngine : IDisposable
     /// <summary>Keyboard-first co-op (Mode A) or keyboard-as-controller (Mode B).</summary>
     KeyboardMode Mode { get; }
 
+    /// <summary>Mode B only: Xbox pad input or the normal keyboard (see <see cref="KeyboardInputStyle"/>).</summary>
+    KeyboardInputStyle KeyboardStyle { get; }
+
     /// <summary>Snapshot of the connected devices.</summary>
     IReadOnlyList<DeviceInfo> Devices { get; }
 
@@ -65,6 +68,18 @@ public interface IEngine : IDisposable
     void Unassign(int slot);
 
     void SetProfile(int slot, string profileId);
+
+    /// <summary>
+    /// Sets the games (process names) whose focus makes Mode B swallow keys and listen, and saves it. In Mode B the
+    /// keyboard pad restarts so the new list applies at once; pads reconnect like after a mode switch.
+    /// </summary>
+    void SetKeyboardTargets(IReadOnlyList<string> processNames);
+
+    /// <summary>Switches the Mode B keyboard style at runtime and saves it. No pad is reconnected.</summary>
+    void SetKeyboardStyle(KeyboardInputStyle style);
+
+    /// <summary>Rumbles the slot's device for 300 ms and blinks its LED (if it has one), so the user can find it.</summary>
+    void Identify(int slot);
 
     /// <summary>
     /// Switches the keyboard mode at runtime and saves it. All pads are released and reconnected in slot order, because
