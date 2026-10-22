@@ -22,6 +22,7 @@ public class AppPathsTests : IDisposable
         paths.ProfilesFolder.Should().Be(@"C:\Roaming\Controlability\profiles");
         paths.SettingsFile.Should().Be(@"C:\Roaming\Controlability\settings.json");
         paths.LogsFolder.Should().Be(@"C:\Local\Controlability\logs");
+        paths.HiddenJournalFile.Should().Be(@"C:\Local\Controlability\hidden.json");
     }
 
     [Fact]

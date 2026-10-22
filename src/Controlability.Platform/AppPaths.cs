@@ -2,7 +2,7 @@ namespace Controlability.Platform;
 
 /// <summary>
 /// Where Controlability keeps its files: settings and profiles in <c>%APPDATA%\Controlability</c>,
-/// logs in <c>%LOCALAPPDATA%\Controlability\logs</c>.
+/// logs and the HidHide journal in <c>%LOCALAPPDATA%\Controlability</c>.
 /// </summary>
 public sealed class AppPaths
 {
@@ -17,6 +17,7 @@ public sealed class AppPaths
         ProfilesFolder = Path.Combine(DataFolder, "profiles");
         SettingsFile = Path.Combine(DataFolder, "settings.json");
         LogsFolder = Path.Combine(localRoot, AppFolderName, "logs");
+        HiddenJournalFile = Path.Combine(localRoot, AppFolderName, "hidden.json");
     }
 
     public string DataFolder { get; }
@@ -26,6 +27,9 @@ public sealed class AppPaths
     public string SettingsFile { get; }
 
     public string LogsFolder { get; }
+
+    /// <summary>Devices HidHide currently hides on our behalf; read on the next start to undo a crash.</summary>
+    public string HiddenJournalFile { get; }
 
     public static AppPaths ForCurrentUser() => new(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),

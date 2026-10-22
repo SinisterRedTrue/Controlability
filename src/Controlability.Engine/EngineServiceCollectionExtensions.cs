@@ -4,6 +4,7 @@ using Controlability.Core.Settings;
 using Controlability.Input.Sdl;
 using Controlability.Output.ViGEm;
 using Controlability.Platform;
+using Controlability.Platform.HidHide;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -50,6 +51,12 @@ public static class EngineServiceCollectionExtensions
             return new ProfileStore(provider.GetRequiredService<AppPaths>().ProfilesFolder, log: options.Log);
         });
         services.TryAddSingleton<IOutputSink>(_ => new ViGEmSink());
+        services.TryAddSingleton<IDeviceHider>(provider =>
+        {
+            var hider = HidHideService.CreateDefault(provider.GetRequiredService<AppPaths>().HiddenJournalFile, options.Log);
+            hider.RecoverFromJournal();
+            return hider;
+        });
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IInputSource, SdlControllerSource>(provider =>
         {
             var source = new SdlControllerSource(provider.GetRequiredService<IClock>());
@@ -67,7 +74,7 @@ public static class EngineServiceCollectionExtensions
                 provider.GetRequiredService<ProfileStore>(),
                 provider.GetRequiredService<IClock>(),
                 settings,
-                provider.GetService<IDeviceHider>(),
+                provider.GetRequiredService<IDeviceHider>(),
                 options.PersistSettings ? store.Save : null,
                 options.Log);
         });

@@ -57,7 +57,11 @@ public sealed record Settings
     /// <summary>Stable device id to the slot (0..3) it had last; used by <see cref="SlotPolicy.Remember"/>.</summary>
     public Dictionary<string, int> RememberedSlots { get; set; } = [];
 
+    /// <summary>Hide the physical controllers (HidHide) while their virtual pad is active.</summary>
     public bool HidHideEnabled { get; set; } = true;
+
+    /// <summary>Show the physical controllers again while the engine is paused.</summary>
+    public bool UnhideWhilePaused { get; set; } = true;
 
     public AppTheme Theme { get; set; } = AppTheme.System;
 

@@ -14,6 +14,8 @@ const string Usage = """
       latency [seconds] [index]
                        Like forward for N seconds (default 10), then print read -> submit latency.
       driver           Print the ViGEmBus driver status.
+      hidhide          Print the HidHide status, whitelist, hidden devices and our journal.
+      unhide-all       Unhide every device Controlability hid (crash recovery).
 
     [index] is the zero-based position shown by 'list' (default 0).
     """;
@@ -64,6 +66,10 @@ switch (args[0].ToLowerInvariant())
         return Commands.Latency(seconds, index, cts.Token);
     case "driver":
         return Commands.Driver();
+    case "hidhide":
+        return Commands.HidHide();
+    case "unhide-all":
+        return Commands.UnhideAll();
     default:
         Console.Error.WriteLine($"Unknown command '{args[0]}'.");
         Console.WriteLine(Usage);

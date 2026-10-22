@@ -110,6 +110,9 @@ public sealed class FakeOutputSink : IOutputSink
 
     public List<int> Disconnected { get; } = [];
 
+    /// <summary>Called at the start of <see cref="Connect"/>, so tests can record the order against other fakes.</summary>
+    public Action<int>? OnConnect { get; set; }
+
     public List<(int Slot, XboxState State)> Submitted { get; } = [];
 
     public int SubmitCount(int slot)
@@ -130,6 +133,7 @@ public sealed class FakeOutputSink : IOutputSink
 
     public SlotHandle Connect(int slotIndex)
     {
+        OnConnect?.Invoke(slotIndex);
         lock (_gate)
         {
             Connected.Add(slotIndex);

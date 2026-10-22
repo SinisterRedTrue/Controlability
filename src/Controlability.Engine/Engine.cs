@@ -4,6 +4,7 @@ using Controlability.Core.Mapping;
 using Controlability.Core.Models;
 using Controlability.Core.Profiles;
 using Controlability.Core.Settings;
+using Controlability.Platform.HidHide;
 
 namespace Controlability.Engine;
 
@@ -34,12 +35,14 @@ public sealed class Engine : IEngine
     private readonly Action<Settings>? _saveSettings;
     private readonly Action<string>? _log;
     private readonly SlotManager _slots;
+    private readonly UnhideOnExit? _unhideOnExit;
 
     private readonly ConcurrentQueue<Action> _commands = new();
     private readonly ConcurrentQueue<(IInputSource Source, DeviceInfo? Added, DeviceId? Removed)> _deviceEvents = new();
     private readonly Dictionary<DeviceId, DeviceRuntime> _devices = [];
     private readonly SlotRuntime[] _slotRuntimes = new SlotRuntime[SlotManager.SlotCount];
     private readonly List<int> _padsToConnect = [];
+    private readonly HashSet<DeviceId> _hidden = [];
     private readonly object _lifecycle = new();
 
     private DeviceRuntime[] _deviceArray = [];
@@ -93,6 +96,10 @@ public sealed class Engine : IEngine
         }
 
         _sink.RumbleRequested += OnRumbleRequested;
+        if (hider is not null)
+        {
+            _unhideOnExit = new UnhideOnExit(hider, log);
+        }
     }
 
     public event Action? Changed;
@@ -127,6 +134,11 @@ public sealed class Engine : IEngine
             }
 
             var rate = _settings.PollingRateHz is 1000 or 500 or 250 ? _settings.PollingRateHz : 1000;
+            if (_settings.HidHideEnabled && _hider is { IsAvailable: true })
+            {
+                _hider.WhitelistSelf();
+            }
+
             _commands.Enqueue(() => ApplyEvents(_slots.AutoAssignPresent()));
             _loop = new InputLoop(Tick, rate, Shutdown);
             _loop.Start();
@@ -149,6 +161,7 @@ public sealed class Engine : IEngine
     {
         _paused = paused;
         _slots.Paused = paused;
+        SyncHiding();
         if (paused)
         {
             foreach (var slot in _slotRuntimes)
@@ -231,6 +244,10 @@ public sealed class Engine : IEngine
         {
             source.Dispose();
         }
+
+        // Shutdown already unhid every slot's device; this also covers a loop that never ran.
+        UnhideEverything();
+        _unhideOnExit?.Dispose();
 
         _sink.Dispose();
     }
@@ -349,6 +366,9 @@ public sealed class Engine : IEngine
                         slot.Device = runtime;
                         Volatile.Write(ref slot.RumbleTarget, runtime);
                         ApplyProfile(e.Slot, runtime, _profiles.FindFor(runtime.Info, null));
+
+                        // The game must never see the real pad next to the virtual one: hide before the pad connects.
+                        HideDevice(runtime.Info);
                         if (!slot.Handle.IsValid && !_padsToConnect.Contains(e.Slot))
                         {
                             _padsToConnect.Add(e.Slot);
@@ -378,6 +398,7 @@ public sealed class Engine : IEngine
                     {
                         // The pad may still be connected (user unassigned it): stop any running rumble.
                         leaving.Source.SetRumble(leaving.Info.Id, 0, 0, 0);
+                        UnhideDevice(leaving.Info);
                     }
 
                     Volatile.Write(ref slot.RumbleTarget, null);
@@ -387,6 +408,86 @@ public sealed class Engine : IEngine
             }
 
             MarkDirty();
+        }
+    }
+
+    private bool HidingWanted => _settings.HidHideEnabled && _hider is { IsAvailable: true };
+
+    private void HideDevice(DeviceInfo info)
+    {
+        if (!HidingWanted || (_paused && _settings.UnhideWhilePaused) || !_hidden.Add(info.Id))
+        {
+            return;
+        }
+
+        try
+        {
+            _hider!.Hide(info);
+        }
+        catch (Exception ex)
+        {
+            _log?.Invoke($"Could not hide \"{info.Name}\": {ex.Message}");
+        }
+    }
+
+    private void UnhideDevice(DeviceInfo info)
+    {
+        if (_hider is null || !_hidden.Remove(info.Id))
+        {
+            return;
+        }
+
+        try
+        {
+            _hider.Unhide(info);
+        }
+        catch (Exception ex)
+        {
+            _log?.Invoke($"Could not unhide \"{info.Name}\": {ex.Message}");
+        }
+    }
+
+    /// <summary>Pause/resume: gives the physical pads back while paused (if the setting is on) and hides them again afterwards.</summary>
+    private void SyncHiding()
+    {
+        if (_hider is null)
+        {
+            return;
+        }
+
+        foreach (var slot in _slotRuntimes)
+        {
+            if (slot.Device is not { } device)
+            {
+                continue;
+            }
+
+            if (_paused && _settings.UnhideWhilePaused)
+            {
+                UnhideDevice(device.Info);
+            }
+            else if (_devices.ContainsKey(device.Info.Id))
+            {
+                HideDevice(device.Info);
+            }
+        }
+    }
+
+    private void UnhideEverything()
+    {
+        if (_hider is null)
+        {
+            return;
+        }
+
+        try
+        {
+            _hidden.Clear();
+            _hider.UnhideAll();
+        }
+        catch (Exception ex)
+        {
+            _log?.Invoke($"Could not unhide the controllers: {ex.Message}");
         }
     }
 
