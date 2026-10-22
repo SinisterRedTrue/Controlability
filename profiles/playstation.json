@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "default-playstation",
+  "name": "PlayStation default",
+  "appliesTo": { "controllerTypes": ["PS4", "PS5"], "processNames": [] },
+  "sticks": {
+    "left": { "deadZone": 0.08, "outer": 0.98, "curve": "linear" },
+    "right": { "deadZone": 0.08, "outer": 0.98, "curve": "linear" }
+  },
+  "triggers": { "deadZone": 0.02, "digital": false },
+  "buttons": { "Touchpad": "Back" },
+  "extras": { "gyroToRightStick": false, "touchpadMouse": false, "turbo": {} },
+  "led": null
+}

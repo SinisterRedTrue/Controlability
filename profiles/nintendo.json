@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "id": "default-nintendo",
+  "name": "Nintendo default",
+  "appliesTo": { "controllerTypes": ["SwitchPro"], "processNames": [] },
+  "sticks": {
+    "left": { "deadZone": 0.08, "outer": 0.98, "curve": "linear" },
+    "right": { "deadZone": 0.08, "outer": 0.98, "curve": "linear" }
+  },
+  "triggers": { "deadZone": 0.02, "digital": false },
+  // Nintendo labels A/B and X/Y by position the other way round: match the labels.
+  "buttons": { "South": "B", "East": "A", "West": "Y", "North": "X" },
+  "extras": { "gyroToRightStick": false, "touchpadMouse": false, "turbo": {} },
+  "led": null
+}

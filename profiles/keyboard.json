@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "default-keyboard",
+  "name": "Keyboard and mouse default",
+  "appliesTo": { "controllerTypes": ["Keyboard"], "processNames": [] },
+  "sticks": {
+    "left": { "deadZone": 0.08, "outer": 0.98, "curve": "linear" },
+    "right": { "deadZone": 0.08, "outer": 0.98, "curve": "linear" }
+  },
+  "triggers": { "deadZone": 0.02, "digital": false },
+  "buttons": {},
+  "extras": { "gyroToRightStick": false, "touchpadMouse": false, "turbo": {} },
+  "led": null,
+  // Mode B: WASD = left stick, mouse = right stick (see mouseSensitivity and decayMs).
+  "keyboard": {
+    "keys": {
+      "W": "LeftStickUp",
+      "A": "LeftStickLeft",
+      "S": "LeftStickDown",
+      "D": "LeftStickRight",
+      "Space": "A",
+      "Shift": "B",
+      "E": "X",
+      "Q": "Y",
+      "MouseLeft": "RightTrigger",
+      "MouseRight": "LeftTrigger",
+      "Tab": "Back",
+      "Escape": "Start",
+      "Up": "DpadUp",
+      "Down": "DpadDown",
+      "Left": "DpadLeft",
+      "Right": "DpadRight",
+      "Ctrl": "LeftThumb",
+    },
+    "mouseSensitivity": 1.0,
+    "decayMs": 60,
+  },
+}

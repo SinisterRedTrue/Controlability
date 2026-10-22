@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "default-generic",
+  "name": "Generic default",
+  "appliesTo": { "controllerTypes": [], "processNames": [] },
+  "sticks": {
+    "left": { "deadZone": 0.08, "outer": 0.98, "curve": "linear" },
+    "right": { "deadZone": 0.08, "outer": 0.98, "curve": "linear" }
+  },
+  "triggers": { "deadZone": 0.02, "digital": false },
+  "buttons": {},
+  "extras": { "gyroToRightStick": false, "touchpadMouse": false, "turbo": {} },
+  "led": null
+}
