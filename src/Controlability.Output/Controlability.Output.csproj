@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Controlability.Core\Controlability.Core.csproj" />
+  </ItemGroup>
+
+</Project>

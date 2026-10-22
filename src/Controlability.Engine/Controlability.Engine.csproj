@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Controlability.Core\Controlability.Core.csproj" />
+    <ProjectReference Include="..\Controlability.Input\Controlability.Input.csproj" />
+    <ProjectReference Include="..\Controlability.Output\Controlability.Output.csproj" />
+    <ProjectReference Include="..\Controlability.Platform\Controlability.Platform.csproj" />
+  </ItemGroup>
+
+</Project>
