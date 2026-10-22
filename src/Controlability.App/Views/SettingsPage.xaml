@@ -31,8 +31,18 @@
             <TextBlock Text="{x:Static res:Strings.SettingsTitle}" FontSize="28" FontWeight="SemiBold" Margin="0,0,0,12" />
 
             <StackPanel x:Name="GeneralPanel">
-                <TextBlock Text="{Binding StatusText}" Style="{StaticResource Hint}" FontWeight="SemiBold"
-                           AutomationProperties.LiveSetting="Polite" />
+                <TextBlock Text="{Binding StatusText}" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,12"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" AutomationProperties.LiveSetting="Polite">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding StatusText}" Value="">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
 
                 <!-- General -->
                 <Border Style="{StaticResource Section}">
@@ -41,7 +51,7 @@
                         <TextBlock Text="{x:Static res:Strings.StartWithWindowsHint}" Style="{StaticResource Hint}" />
                         <ui:ToggleSwitch IsChecked="{Binding StartWithWindows, Mode=TwoWay}" Content="{x:Static res:Strings.StartWithWindows}"
                                          AutomationProperties.Name="{x:Static res:Strings.StartWithWindows}" />
-                        <ui:ToggleSwitch IsChecked="{Binding StartMinimized, Mode=TwoWay}" Content="{x:Static res:Strings.StartMinimized}"
+                        <ui:ToggleSwitch Margin="0,8,0,0" IsChecked="{Binding StartMinimized, Mode=TwoWay}" Content="{x:Static res:Strings.StartMinimized}"
                                          AutomationProperties.Name="{x:Static res:Strings.StartMinimized}" />
                         <TextBlock Text="{x:Static res:Strings.CloseToTrayHint}" Style="{StaticResource Hint}" Margin="0,8,0,8" />
                         <ui:ToggleSwitch IsChecked="{Binding DataContext.CloseToTray, RelativeSource={RelativeSource AncestorType=Page}, Mode=TwoWay}"
@@ -79,7 +89,7 @@
                         <TextBlock Text="{x:Static res:Strings.HidHideHint}" Style="{StaticResource Hint}" />
                         <ui:ToggleSwitch IsChecked="{Binding HidHideEnabled, Mode=TwoWay}" Content="{x:Static res:Strings.HidHideEnabled}"
                                          AutomationProperties.Name="{x:Static res:Strings.HidHideEnabled}" />
-                        <ui:ToggleSwitch IsChecked="{Binding UnhideWhilePaused, Mode=TwoWay}" Content="{x:Static res:Strings.UnhideWhilePaused}"
+                        <ui:ToggleSwitch Margin="0,8,0,0" IsChecked="{Binding UnhideWhilePaused, Mode=TwoWay}" Content="{x:Static res:Strings.UnhideWhilePaused}"
                                          AutomationProperties.Name="{x:Static res:Strings.UnhideWhilePaused}" />
                         <TextBlock Text="{x:Static res:Strings.UnhideAllHint}" Style="{StaticResource Hint}" Margin="0,8,0,8" />
                         <Button Content="{x:Static res:Strings.UnhideAllButton}" Command="{Binding UnhideAllCommand}" HorizontalAlignment="Left" />

@@ -10,6 +10,7 @@ using Controlability.Core.Profiles;
 using Controlability.Core.Settings;
 using Controlability.Engine;
 using Controlability.Platform;
+using Controlability.Platform.HidHide;
 using Controlability.Platform.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -33,6 +34,14 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+
+        if (e.Args.Contains(CleanupRunner.Argument, StringComparer.OrdinalIgnoreCase))
+        {
+            // The uninstaller runs this: no window, no single-instance check, no engine.
+            var hider = HidHideService.CreateDefault(_paths.HiddenJournalFile);
+            Shutdown(CleanupRunner.Run(hider, new RegistryAutostart()));
+            return;
+        }
 
         _instance = SingleInstance.Create(InstanceName);
         if (!_instance.IsFirst)

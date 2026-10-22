@@ -33,7 +33,7 @@ public static class ThirdPartyNotices
         new("H.NotifyIcon", "MIT", "https://github.com/HavenDV/H.NotifyIcon"),
         new("CommunityToolkit.Mvvm", "MIT", "https://github.com/CommunityToolkit/dotnet"),
         new("Microsoft.Extensions (Hosting, DI, Logging)", "MIT", "https://github.com/dotnet/runtime"),
-        new("ViGEmBus (installed separately)", "see project", "https://github.com/nefarius/ViGEmBus"),
-        new("HidHide (installed separately)", "see project", "https://github.com/nefarius/HidHide"),
+        new("ViGEmBus (installed separately)", "BSD-3-Clause", "https://github.com/nefarius/ViGEmBus"),
+        new("HidHide (installed separately)", "MIT", "https://github.com/nefarius/HidHide"),
     ];
 }
