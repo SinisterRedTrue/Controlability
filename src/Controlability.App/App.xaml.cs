@@ -122,6 +122,7 @@ public partial class App : Application
         services.AddSingleton<IUiThread>(_ => new WpfUiThread(Dispatcher));
         services.AddSingleton<IUrlLauncher>(_ => new ShellUrlLauncher(message => _logger?.LogWarning("{Message}", message)));
         services.AddSingleton<IAutostart, RegistryAutostart>();
+        services.AddSingleton<IUninstaller>(_ => new InnoUninstaller(AppContext.BaseDirectory, message => _logger?.LogWarning("{Message}", message)));
         services.AddSingleton<IClipboard, WpfClipboard>();
         services.AddSingleton<IAppearance, WpfAppearance>();
         services.AddSingleton<DiagnosticsService>();
@@ -154,7 +155,9 @@ public partial class App : Application
             provider.GetRequiredService<RollingFileLog>(),
             provider.GetRequiredService<DiagnosticsService>(),
             provider.GetRequiredService<IDialogs>(),
-            provider.GetRequiredService<IUrlLauncher>()));
+            provider.GetRequiredService<IUrlLauncher>(),
+            provider.GetRequiredService<IUninstaller>(),
+            provider.GetRequiredService<IShell>()));
         services.AddSingleton(provider => new SteamTipViewModel(
             provider.GetRequiredService<IRunningApps>(),
             provider.GetRequiredService<Settings>(),

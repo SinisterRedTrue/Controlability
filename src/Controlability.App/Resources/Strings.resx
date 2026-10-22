@@ -339,4 +339,10 @@
   <data name="WizardNext" xml:space="preserve"><value>Next</value></data>
   <data name="WizardFinish" xml:space="preserve"><value>Finish</value></data>
   <data name="WizardSkip" xml:space="preserve"><value>Skip setup</value></data>
+  <data name="UninstallTitle" xml:space="preserve"><value>Uninstall Controlability</value></data>
+  <data name="UninstallHint" xml:space="preserve"><value>Gives your controllers back to Windows, removes the app and its startup entry, and asks whether to keep your settings and profiles. ViGEmBus and HidHide stay installed.</value></data>
+  <data name="UninstallButton" xml:space="preserve"><value>Uninstall...</value></data>
+  <data name="UninstallConfirm" xml:space="preserve"><value>Controlability will close and the uninstaller will start. Your controllers are shown to Windows again first. Continue?</value></data>
+  <data name="UninstallFailed" xml:space="preserve"><value>The uninstaller could not be started.</value></data>
+  <data name="UninstallUnavailable" xml:space="preserve"><value>This copy was not installed with the installer (no uninstaller was found next to the program), so there is nothing to uninstall here.</value></data>
 </root>

@@ -572,6 +572,18 @@ public static class Strings
 
     public static string CrashCopy => Get(nameof(CrashCopy));
 
+    public static string UninstallTitle => Get(nameof(UninstallTitle));
+
+    public static string UninstallHint => Get(nameof(UninstallHint));
+
+    public static string UninstallButton => Get(nameof(UninstallButton));
+
+    public static string UninstallConfirm => Get(nameof(UninstallConfirm));
+
+    public static string UninstallFailed => Get(nameof(UninstallFailed));
+
+    public static string UninstallUnavailable => Get(nameof(UninstallUnavailable));
+
     public static string CrashClose => Get(nameof(CrashClose));
 
     public static string SteamTipTitle => Get(nameof(SteamTipTitle));

@@ -1,3 +1,4 @@
+using Controlability.App.Resources;
 using Controlability.App.Services;
 using Controlability.App.ViewModels;
 using Controlability.Core.Models;
@@ -71,6 +72,8 @@ public sealed class GeneralSettingsViewModelTests : IDisposable
     private readonly FakeClipboard _clipboard = new();
     private readonly FakeDialogs _dialogs = new();
     private readonly FakeUrlLauncher _launcher = new();
+    private readonly FakeUninstaller _uninstaller = new();
+    private readonly FakeShell _shell = new();
     private readonly RollingFileLog _log;
     private GeneralSettingsViewModel? _viewModel;
 
@@ -85,7 +88,9 @@ public sealed class GeneralSettingsViewModelTests : IDisposable
         _log,
         new DiagnosticsService(_engine, new FakeDriverProbe { Info = new DriverInfo(true, "1.22.0", true, "1.5.0") }, _settings, _log, _clipboard),
         _dialogs,
-        _launcher);
+        _launcher,
+        _uninstaller,
+        _shell);
 
     public void Dispose() => Directory.Delete(_logFolder, recursive: true);
 
@@ -200,6 +205,46 @@ public sealed class GeneralSettingsViewModelTests : IDisposable
         ViewModel.UnhideAllCommand.Execute(null);
 
         _engine.Calls.Should().Contain("UnhideAll");
+    }
+
+    [Fact]
+    public void Uninstall_starts_the_uninstaller_and_exits_after_a_yes()
+    {
+        ViewModel.UninstallCommand.Execute(null);
+
+        _uninstaller.Started.Should().Be(1);
+        _shell.ExitCount.Should().Be(1);
+    }
+
+    [Fact]
+    public void Uninstall_does_nothing_after_a_no()
+    {
+        _dialogs.ConfirmAnswer = false;
+
+        ViewModel.UninstallCommand.Execute(null);
+
+        _uninstaller.Started.Should().Be(0);
+        _shell.ExitCount.Should().Be(0);
+    }
+
+    [Fact]
+    public void Uninstall_keeps_the_app_open_when_the_uninstaller_cannot_start()
+    {
+        _uninstaller.Succeeds = false;
+
+        ViewModel.UninstallCommand.Execute(null);
+
+        _shell.ExitCount.Should().Be(0);
+        ViewModel.StatusText.Should().Be(Strings.UninstallFailed);
+    }
+
+    [Fact]
+    public void Uninstall_is_disabled_without_an_uninstaller()
+    {
+        _uninstaller.IsAvailable = false;
+
+        ViewModel.UninstallAvailable.Should().BeFalse();
+        ViewModel.UninstallCommand.CanExecute(null).Should().BeFalse();
     }
 
     [Fact]

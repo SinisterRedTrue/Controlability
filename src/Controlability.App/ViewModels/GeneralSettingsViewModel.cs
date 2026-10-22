@@ -27,6 +27,8 @@ public sealed partial class GeneralSettingsViewModel : ObservableObject
     private readonly DiagnosticsService _diagnostics;
     private readonly IDialogs _dialogs;
     private readonly IUrlLauncher _launcher;
+    private readonly IUninstaller _uninstaller;
+    private readonly IShell _shell;
     private bool _loading;
 
     [ObservableProperty]
@@ -74,7 +76,9 @@ public sealed partial class GeneralSettingsViewModel : ObservableObject
         RollingFileLog log,
         DiagnosticsService diagnostics,
         IDialogs dialogs,
-        IUrlLauncher launcher)
+        IUrlLauncher launcher,
+        IUninstaller uninstaller,
+        IShell shell)
     {
         _engine = engine;
         _settings = settings;
@@ -85,6 +89,8 @@ public sealed partial class GeneralSettingsViewModel : ObservableObject
         _diagnostics = diagnostics;
         _dialogs = dialogs;
         _launcher = launcher;
+        _uninstaller = uninstaller;
+        _shell = shell;
 
         _mode = ModeChoices[0];
         _slotPolicyChoice = SlotPolicyChoices[0];
@@ -237,6 +243,27 @@ public sealed partial class GeneralSettingsViewModel : ObservableObject
 
         _engine.UnhideAll();
         StatusText = Strings.UnhideAllDone;
+    }
+
+    /// <summary>Whether this copy has an uninstaller (it was installed with the installer).</summary>
+    public bool UninstallAvailable => _uninstaller.IsAvailable;
+
+    [RelayCommand(CanExecute = nameof(UninstallAvailable))]
+    private void Uninstall()
+    {
+        if (!_dialogs.Confirm(Strings.UninstallTitle, Strings.UninstallConfirm))
+        {
+            return;
+        }
+
+        if (!_uninstaller.Start())
+        {
+            StatusText = Strings.UninstallFailed;
+            return;
+        }
+
+        // Exiting stops the engine, removes the pads and unhides the controllers; the uninstaller then removes the files.
+        _shell.Exit();
     }
 
     [RelayCommand]

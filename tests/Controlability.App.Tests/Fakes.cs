@@ -67,6 +67,25 @@ public sealed class FakeNotifier : INotifier
     public void Notify(string title, string message) => Notifications.Add((title, message));
 }
 
+public sealed class FakeUninstaller : IUninstaller
+{
+    public bool IsAvailable { get; set; } = true;
+
+    public bool Succeeds { get; set; } = true;
+
+    public int Started { get; private set; }
+
+    public bool Start()
+    {
+        if (Succeeds)
+        {
+            Started++;
+        }
+
+        return Succeeds;
+    }
+}
+
 public sealed class FakeShell : IShell
 {
     public int ShowCount { get; private set; }

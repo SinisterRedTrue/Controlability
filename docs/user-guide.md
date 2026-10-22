@@ -119,7 +119,7 @@ Settings are stored in `%APPDATA%\Controlability\settings.json`. Logs and the li
 
 ## Uninstall
 
-*Settings → Apps → Installed apps → Controlability → Uninstall*. The uninstaller closes the app, gives every hidden controller back, removes the startup entry and asks whether to keep your settings and profiles. ViGEmBus and HidHide are separate programs and stay installed; remove them from the same Apps list if you no longer need them.
+*Settings → Apps → Installed apps → Controlability → Uninstall*, or the **Uninstall...** button in Controlability's own Settings → About (only on a copy installed with the installer). The uninstaller closes the app, gives every hidden controller back, removes the startup entry and asks whether to keep your settings and profiles. ViGEmBus and HidHide are separate programs and stay installed; remove them from the same Apps list if you no longer need them.
 
 ## FAQ
 
