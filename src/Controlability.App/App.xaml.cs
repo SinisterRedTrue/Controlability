@@ -70,6 +70,7 @@ public partial class App : Application
         services.AddSingleton<IProfileCatalog>(provider => provider.GetRequiredService<ProfileStoreCatalog>());
         services.AddSingleton<IProfileEditor>(provider => provider.GetRequiredService<ProfileStoreCatalog>());
         services.AddSingleton<IRunningApps, RunningApps>();
+        services.AddSingleton<IDialogs, WpfDialogs>();
         services.AddSingleton<ShellController>();
         services.AddSingleton<IShell>(provider => provider.GetRequiredService<ShellController>());
         services.AddSingleton<DiPageProvider>();
@@ -84,6 +85,8 @@ public partial class App : Application
             provider.GetRequiredService<IRunningApps>(),
             provider.GetRequiredService<IUiThread>(),
             provider.GetRequiredService<IClock>()));
+        services.AddSingleton<DevicesViewModel>();
+        services.AddSingleton<ProfilesViewModel>();
         services.AddSingleton<ConnectionNotifier>();
 
         services.AddSingleton<TrayIconHost>();

@@ -310,11 +310,32 @@ public sealed class FakeProfileEditor : IProfileEditor
 
     public Profile? GetShipped(string id) => Shipped.TryGetValue(id, out var profile) ? Clone(profile) : null;
 
-    private static Profile Clone(Profile profile) => profile with
+    public IReadOnlyList<Profile> GetAll() => [.. Profiles.Values.Select(Clone)];
+
+    public void Delete(string id) => Profiles.Remove(id);
+
+    /// <summary>What <see cref="TryImport"/> returns for a path, by path.</summary>
+    public Dictionary<string, Profile> Files { get; } = [];
+
+    public Dictionary<string, Profile> Exported { get; } = [];
+
+    public bool TryImport(string path, out Profile profile, out string error)
     {
-        Keyboard = profile.Keyboard with { Keys = new Dictionary<string, string>(profile.Keyboard.Keys) },
-        Buttons = new Dictionary<string, string>(profile.Buttons),
-    };
+        if (Files.TryGetValue(path, out var found))
+        {
+            profile = Clone(found);
+            error = "";
+            return true;
+        }
+
+        profile = Profile.Generic;
+        error = "Not a profile file.";
+        return false;
+    }
+
+    public void Export(Profile profile, string path) => Exported[path] = Clone(profile);
+
+    private static Profile Clone(Profile profile) => ProfileJson.Clone(profile);
 }
 
 public sealed class FakeRunningApps(params string[] names) : IRunningApps

@@ -62,6 +62,7 @@ public sealed class Engine : IEngine
     private volatile IReadOnlyList<SlotStatus> _slotsSnapshot;
     private volatile IReadOnlyDictionary<DeviceId, DeviceRuntime> _liveLookup = new Dictionary<DeviceId, DeviceRuntime>();
     private volatile bool _paused;
+    private volatile IReadOnlyCollection<DeviceId> _hiddenSnapshot = [];
 
     public Engine(
         IReadOnlyList<IInputSource> sources,
@@ -120,6 +121,8 @@ public sealed class Engine : IEngine
             _unhideOnExit = new UnhideOnExit(hider, log);
         }
     }
+
+    public IReadOnlyCollection<DeviceId> HiddenDevices => _hiddenSnapshot;
 
     public event Action? Changed;
 
@@ -230,6 +233,70 @@ public sealed class Engine : IEngine
             MarkDirty();
         });
     }
+
+    public void ReloadProfile(string profileId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(profileId);
+        _commands.Enqueue(() =>
+        {
+            Profile? profile = null;
+            for (var i = 0; i < _slotRuntimes.Length; i++)
+            {
+                var slot = _slotRuntimes[i];
+                if (slot.Device is not { } runtime || slot.Profile?.Id != profileId)
+                {
+                    continue;
+                }
+
+                profile ??= _profiles.Get(profileId);
+                if (profile is null)
+                {
+                    _log?.Invoke($"Profile \"{profileId}\" not found; slot {i + 1} keeps its profile.");
+                    return;
+                }
+
+                ApplyProfile(i, runtime, profile);
+            }
+
+            if (profile is not null)
+            {
+                MarkDirty();
+            }
+        });
+    }
+
+    public void SetDeviceHidden(DeviceId device, bool hidden) => _commands.Enqueue(() =>
+    {
+        if (!_devices.TryGetValue(device, out var runtime) || !HidingWanted)
+        {
+            return;
+        }
+
+        if (hidden)
+        {
+            HideDevice(runtime.Info);
+        }
+        else
+        {
+            UnhideDevice(runtime.Info);
+        }
+    });
+
+    public void TestRumble(DeviceId device) => _commands.Enqueue(() =>
+    {
+        if (_devices.TryGetValue(device, out var runtime) && runtime.Info.Capabilities.HasFlag(DeviceCapabilities.Rumble))
+        {
+            runtime.Source.SetRumble(device, 255, 255, IdentifyRumbleMs);
+        }
+    });
+
+    public void SetLedColor(DeviceId device, byte r, byte g, byte b) => _commands.Enqueue(() =>
+    {
+        if (_devices.TryGetValue(device, out var runtime) && runtime.Info.Capabilities.HasFlag(DeviceCapabilities.Led))
+        {
+            runtime.Source.SetLed(device, r, g, b);
+        }
+    });
 
     public void SetKeyboardStyle(KeyboardInputStyle style)
     {
@@ -520,6 +587,12 @@ public sealed class Engine : IEngine
         SyncKeyboardBlocking();
     }
 
+    private void PublishHidden()
+    {
+        _hiddenSnapshot = [.. _hidden];
+        MarkDirty();
+    }
+
     private bool HidingWanted => _settings.HidHideEnabled && _hider is { IsAvailable: true };
 
     private void HideDevice(DeviceInfo info)
@@ -528,6 +601,8 @@ public sealed class Engine : IEngine
         {
             return;
         }
+
+        PublishHidden();
 
         try
         {
@@ -545,6 +620,8 @@ public sealed class Engine : IEngine
         {
             return;
         }
+
+        PublishHidden();
 
         try
         {
@@ -592,6 +669,7 @@ public sealed class Engine : IEngine
         try
         {
             _hidden.Clear();
+            PublishHidden();
             _hider.UnhideAll();
         }
         catch (Exception ex)

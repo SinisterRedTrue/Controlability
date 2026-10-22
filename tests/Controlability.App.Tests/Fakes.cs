@@ -106,6 +106,10 @@ public sealed class FakeEngine : IEngine
 
     public int ChangedSubscribers => Changed?.GetInvocationList().Length ?? 0;
 
+    public List<DeviceId> Hidden { get; } = [];
+
+    public IReadOnlyCollection<DeviceId> HiddenDevices => Hidden;
+
     public event Action? Changed;
 
     public static DeviceInfo MakeDevice(string name, ControllerType type = ControllerType.PS4, ConnectionType connection = ConnectionType.Usb)
@@ -135,6 +139,25 @@ public sealed class FakeEngine : IEngine
     public void Identify(int slot) => Calls.Add($"Identify:{slot}");
 
     public void SetMode(KeyboardMode mode) => Calls.Add($"SetMode:{mode}");
+
+    public void ReloadProfile(string profileId) => Calls.Add($"ReloadProfile:{profileId}");
+
+    public void SetDeviceHidden(DeviceId device, bool hidden)
+    {
+        Calls.Add($"SetDeviceHidden:{device}:{hidden}");
+        if (hidden)
+        {
+            Hidden.Add(device);
+        }
+        else
+        {
+            Hidden.Remove(device);
+        }
+    }
+
+    public void TestRumble(DeviceId device) => Calls.Add($"TestRumble:{device}");
+
+    public void SetLedColor(DeviceId device, byte r, byte g, byte b) => Calls.Add($"SetLedColor:{device}:{r},{g},{b}");
 
     public bool TryGetLiveState(DeviceId device, out InputState raw, out XboxState mapped)
     {

@@ -240,5 +240,183 @@ public static class Strings
 
     public static string PadNotMapped => Get(nameof(PadNotMapped));
 
+    public static string StatusSaved => Get(nameof(StatusSaved));
+
+    public static string StatusReverted => Get(nameof(StatusReverted));
+
+    public static string StatusReset => Get(nameof(StatusReset));
+
+    public static string BindPrompt => Get(nameof(BindPrompt));
+
+    public static string BindNoController => Get(nameof(BindNoController));
+
+    public static string BindTimedOut => Get(nameof(BindTimedOut));
+
+    public static string ErrNameEmpty => Get(nameof(ErrNameEmpty));
+
+    public static string ErrLeftDeadZone => Get(nameof(ErrLeftDeadZone));
+
+    public static string ErrRightDeadZone => Get(nameof(ErrRightDeadZone));
+
+    public static string BrowseGameTitle => Get(nameof(BrowseGameTitle));
+
+    public static string FileFilterPrograms => Get(nameof(FileFilterPrograms));
+
+    public static string FileFilterProfiles => Get(nameof(FileFilterProfiles));
+
+    public static string DiscardTitle => Get(nameof(DiscardTitle));
+
+    public static string DiscardMessage => Get(nameof(DiscardMessage));
+
+    public static string DeleteTitle => Get(nameof(DeleteTitle));
+
+    public static string DeleteMessage => Get(nameof(DeleteMessage));
+
+    public static string ImportTitle => Get(nameof(ImportTitle));
+
+    public static string ExportTitle => Get(nameof(ExportTitle));
+
+    public static string CopyName => Get(nameof(CopyName));
+
+    public static string StatusDuplicated => Get(nameof(StatusDuplicated));
+
+    public static string StatusDeleted => Get(nameof(StatusDeleted));
+
+    public static string StatusImported => Get(nameof(StatusImported));
+
+    public static string StatusImportFailed => Get(nameof(StatusImportFailed));
+
+    public static string StatusExported => Get(nameof(StatusExported));
+
+    public static string CapRumble => Get(nameof(CapRumble));
+
+    public static string CapLed => Get(nameof(CapLed));
+
+    public static string CapGyro => Get(nameof(CapGyro));
+
+    public static string CapTouchpad => Get(nameof(CapTouchpad));
+
+    public static string CapBattery => Get(nameof(CapBattery));
+
+    public static string CapNone => Get(nameof(CapNone));
+
+    public static string LedInvalid => Get(nameof(LedInvalid));
+
+    public static string DevicesDetected => Get(nameof(DevicesDetected));
+
+    public static string LabelType => Get(nameof(LabelType));
+
+    public static string LabelConnection => Get(nameof(LabelConnection));
+
+    public static string LabelVidPid => Get(nameof(LabelVidPid));
+
+    public static string LabelSerial => Get(nameof(LabelSerial));
+
+    public static string LabelHidPath => Get(nameof(LabelHidPath));
+
+    public static string LabelCapabilities => Get(nameof(LabelCapabilities));
+
+    public static string LabelAssignment => Get(nameof(LabelAssignment));
+
+    public static string HideFromGames => Get(nameof(HideFromGames));
+
+    public static string HideFromGamesHint => Get(nameof(HideFromGamesHint));
+
+    public static string HidHideMissingHint => Get(nameof(HidHideMissingHint));
+
+    public static string RumbleTest => Get(nameof(RumbleTest));
+
+    public static string LedColor => Get(nameof(LedColor));
+
+    public static string LedApply => Get(nameof(LedApply));
+
+    public static string LivePanelRaw => Get(nameof(LivePanelRaw));
+
+    public static string LivePanelOutput => Get(nameof(LivePanelOutput));
+
+    public static string LiveNoState => Get(nameof(LiveNoState));
+
+    public static string ProfilesList => Get(nameof(ProfilesList));
+
+    public static string ProfilesImport => Get(nameof(ProfilesImport));
+
+    public static string ProfilesExport => Get(nameof(ProfilesExport));
+
+    public static string ProfilesDuplicate => Get(nameof(ProfilesDuplicate));
+
+    public static string ProfilesDelete => Get(nameof(ProfilesDelete));
+
+    public static string ProfilesDeleteShipped => Get(nameof(ProfilesDeleteShipped));
+
+    public static string ProfilesEmptyTitle => Get(nameof(ProfilesEmptyTitle));
+
+    public static string ProfilesEmptyHint => Get(nameof(ProfilesEmptyHint));
+
+    public static string EditorSave => Get(nameof(EditorSave));
+
+    public static string EditorRevert => Get(nameof(EditorRevert));
+
+    public static string EditorReset => Get(nameof(EditorReset));
+
+    public static string EditorName => Get(nameof(EditorName));
+
+    public static string TabButtons => Get(nameof(TabButtons));
+
+    public static string TabSticks => Get(nameof(TabSticks));
+
+    public static string TabTriggers => Get(nameof(TabTriggers));
+
+    public static string TabKeyboard => Get(nameof(TabKeyboard));
+
+    public static string TabAppliesTo => Get(nameof(TabAppliesTo));
+
+    public static string ButtonsHint => Get(nameof(ButtonsHint));
+
+    public static string ButtonBind => Get(nameof(ButtonBind));
+
+    public static string ButtonClear => Get(nameof(ButtonClear));
+
+    public static string ButtonCancel => Get(nameof(ButtonCancel));
+
+    public static string StickLeft => Get(nameof(StickLeft));
+
+    public static string StickRight => Get(nameof(StickRight));
+
+    public static string StickInner => Get(nameof(StickInner));
+
+    public static string StickOuter => Get(nameof(StickOuter));
+
+    public static string StickCurve => Get(nameof(StickCurve));
+
+    public static string StickPreviewHint => Get(nameof(StickPreviewHint));
+
+    public static string TriggerDeadZoneLabel => Get(nameof(TriggerDeadZoneLabel));
+
+    public static string TriggerDigitalLabel => Get(nameof(TriggerDigitalLabel));
+
+    public static string TriggerThresholdLabel => Get(nameof(TriggerThresholdLabel));
+
+    public static string KeyboardTabHint => Get(nameof(KeyboardTabHint));
+
+    public static string MouseSensitivity => Get(nameof(MouseSensitivity));
+
+    public static string MouseDecay => Get(nameof(MouseDecay));
+
+    public static string AppliesControllers => Get(nameof(AppliesControllers));
+
+    public static string AppliesGames => Get(nameof(AppliesGames));
+
+    public static string AppliesGamesHint => Get(nameof(AppliesGamesHint));
+
+    public static string AppliesNoGames => Get(nameof(AppliesNoGames));
+
+    public static string AppliesBrowse => Get(nameof(AppliesBrowse));
+
+    public static string AppliesAddRunning => Get(nameof(AppliesAddRunning));
+
+    public static string AppliesRefresh => Get(nameof(AppliesRefresh));
+
+    public static string TabKeyboardOnly => Get(nameof(TabKeyboardOnly));
+
     public static string Format(string template, params object[] args) => string.Format(CultureInfo.CurrentCulture, template, args);
 }

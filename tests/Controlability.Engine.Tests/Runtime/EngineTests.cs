@@ -387,6 +387,68 @@ public sealed class EngineTests : IDisposable
     }
 
     [Fact]
+    public void ReloadProfile_AppliesTheEditedProfileToTheSlotUsingIt()
+    {
+        var path = Path.Combine(_profilesFolder, "swap.json");
+        File.WriteAllText(path, """{ "schemaVersion": 1, "id": "swap", "name": "Swap", "appliesTo": { "processNames": ["game.exe"] }, "buttons": { "South": "B" } }""");
+        Plug(Pad1);
+        _source.SetState(Pad1.Id, Pressed(ButtonId.South));
+        Engine.Tick();
+        Engine.SetProfile(0, "swap");
+        Engine.Tick();
+        _sink.LastSubmitted(0).IsPressed(XboxButton.B).Should().BeTrue();
+
+        File.WriteAllText(path, """{ "schemaVersion": 1, "id": "swap", "name": "Swap", "appliesTo": { "processNames": ["game.exe"] }, "buttons": { "South": "Y" } }""");
+        Engine.ReloadProfile("swap");
+        Engine.Tick();
+
+        var state = _sink.LastSubmitted(0);
+        state.IsPressed(XboxButton.Y).Should().BeTrue();
+        state.IsPressed(XboxButton.B).Should().BeFalse();
+    }
+
+    [Fact]
+    public void ReloadProfile_LeavesSlotsWithAnotherProfileAlone()
+    {
+        File.WriteAllText(Path.Combine(_profilesFolder, "swap.json"), """{ "schemaVersion": 1, "id": "swap", "name": "Swap", "appliesTo": { "processNames": ["game.exe"] }, "buttons": { "South": "B" } }""");
+        Plug(Pad1);
+        _source.SetState(Pad1.Id, Pressed(ButtonId.South));
+        Engine.Tick();
+        var raised = 0;
+        Engine.Changed += () => raised++;
+
+        Engine.ReloadProfile("swap");
+        Engine.Tick();
+
+        _sink.LastSubmitted(0).IsPressed(XboxButton.A).Should().BeTrue();
+        raised.Should().Be(0);
+    }
+
+    [Fact]
+    public void TestRumble_ShakesTheDeviceEvenWithoutASlot()
+    {
+        Plug(Pad1);
+        Engine.Tick();
+
+        Engine.TestRumble(Pad1.Id);
+        Engine.Tick();
+
+        _source.Rumbles.Should().Contain(r => r.Id == Pad1.Id && r.Low == 255 && r.High == 255);
+    }
+
+    [Fact]
+    public void SetLedColor_ReachesTheDevice()
+    {
+        Plug(Pad1);
+        Engine.Tick();
+
+        Engine.SetLedColor(Pad1.Id, 1, 2, 3);
+        Engine.Tick();
+
+        _source.Leds.Should().Contain((Pad1.Id, (byte)1, (byte)2, (byte)3));
+    }
+
+    [Fact]
     public void SetProfile_WithAnUnknownId_KeepsTheCurrentProfile()
     {
         Plug(Pad1);

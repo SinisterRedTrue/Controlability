@@ -1,0 +1,92 @@
+<UserControl x:Class="Controlability.App.Controls.ControllerView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:res="clr-namespace:Controlability.App.Resources"
+             AutomationProperties.LiveSetting="Off">
+    <UserControl.Resources>
+        <Style x:Key="Part" TargetType="Shape">
+            <Setter Property="Fill" Value="{DynamicResource ControlFillColorDefaultBrush}" />
+            <Setter Property="Stroke" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+            <Setter Property="StrokeThickness" Value="1.5" />
+        </Style>
+        <Style x:Key="Ring" TargetType="Ellipse">
+            <Setter Property="Fill" Value="Transparent" />
+            <Setter Property="Stroke" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+            <Setter Property="StrokeThickness" Value="1" />
+            <Setter Property="StrokeDashArray" Value="2 2" />
+        </Style>
+        <Style x:Key="Letter" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+            <Setter Property="IsHitTestVisible" Value="False" />
+            <Setter Property="Width" Value="26" />
+            <Setter Property="TextAlignment" Value="Center" />
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock x:Name="TitleText" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,0,0,4" />
+
+        <Grid Grid.Row="1">
+            <Viewbox Stretch="Uniform" MaxHeight="300">
+                <Canvas Width="440" Height="290">
+                    <!-- Body -->
+                    <Path Style="{StaticResource Part}" StrokeThickness="2"
+                          Data="M 120,90 C 70,90 30,160 28,235 C 27,270 62,278 84,252 L 128,200 C 138,188 150,186 165,186 L 275,186 C 290,186 302,188 312,200 L 356,252 C 378,278 413,270 412,235 C 410,160 370,90 320,90 Z" />
+
+                    <!-- Triggers (bars) and bumpers -->
+                    <Rectangle Canvas.Left="92" Canvas.Top="34" Width="96" Height="14" RadiusX="4" RadiusY="4" Style="{StaticResource Part}" />
+                    <Rectangle x:Name="LtFill" Canvas.Left="92" Canvas.Top="34" Width="0" Height="14" RadiusX="4" RadiusY="4" IsHitTestVisible="False" />
+                    <Rectangle Canvas.Left="252" Canvas.Top="34" Width="96" Height="14" RadiusX="4" RadiusY="4" Style="{StaticResource Part}" />
+                    <Rectangle x:Name="RtFill" Canvas.Left="252" Canvas.Top="34" Width="0" Height="14" RadiusX="4" RadiusY="4" IsHitTestVisible="False" />
+                    <TextBlock Canvas.Left="68" Canvas.Top="33" Text="LT" Style="{StaticResource Letter}" FontSize="11" />
+                    <TextBlock Canvas.Left="350" Canvas.Top="33" Text="RT" Style="{StaticResource Letter}" FontSize="11" />
+                    <Rectangle x:Name="BtnLB" Canvas.Left="92" Canvas.Top="60" Width="96" Height="20" RadiusX="8" RadiusY="8" Style="{StaticResource Part}" />
+                    <Rectangle x:Name="BtnRB" Canvas.Left="252" Canvas.Top="60" Width="96" Height="20" RadiusX="8" RadiusY="8" Style="{StaticResource Part}" />
+
+                    <!-- Left stick -->
+                    <Ellipse x:Name="LsWell" Canvas.Left="75" Canvas.Top="95" Width="60" Height="60" Style="{StaticResource Part}" />
+                    <Ellipse x:Name="LsOuter" Style="{StaticResource Ring}" />
+                    <Ellipse x:Name="LsInner" Style="{StaticResource Ring}" />
+                    <Ellipse x:Name="LsDot" Width="10" Height="10" IsHitTestVisible="False" />
+
+                    <!-- Right stick -->
+                    <Ellipse x:Name="RsWell" Canvas.Left="249" Canvas.Top="129" Width="52" Height="52" Style="{StaticResource Part}" />
+                    <Ellipse x:Name="RsOuter" Style="{StaticResource Ring}" />
+                    <Ellipse x:Name="RsInner" Style="{StaticResource Ring}" />
+                    <Ellipse x:Name="RsDot" Width="10" Height="10" IsHitTestVisible="False" />
+
+                    <!-- D-pad -->
+                    <Rectangle x:Name="DpadUp" Canvas.Left="157" Canvas.Top="138" Width="16" Height="20" Style="{StaticResource Part}" />
+                    <Rectangle x:Name="DpadDown" Canvas.Left="157" Canvas.Top="162" Width="16" Height="20" Style="{StaticResource Part}" />
+                    <Rectangle x:Name="DpadLeft" Canvas.Left="133" Canvas.Top="152" Width="20" Height="16" Style="{StaticResource Part}" />
+                    <Rectangle x:Name="DpadRight" Canvas.Left="177" Canvas.Top="152" Width="20" Height="16" Style="{StaticResource Part}" />
+
+                    <!-- Face buttons -->
+                    <Ellipse x:Name="BtnY" Canvas.Left="327" Canvas.Top="82" Width="26" Height="26" Style="{StaticResource Part}" />
+                    <Ellipse x:Name="BtnX" Canvas.Left="302" Canvas.Top="107" Width="26" Height="26" Style="{StaticResource Part}" />
+                    <Ellipse x:Name="BtnB" Canvas.Left="352" Canvas.Top="107" Width="26" Height="26" Style="{StaticResource Part}" />
+                    <Ellipse x:Name="BtnA" Canvas.Left="327" Canvas.Top="132" Width="26" Height="26" Style="{StaticResource Part}" />
+                    <TextBlock Canvas.Left="327" Canvas.Top="86" Text="Y" Style="{StaticResource Letter}" />
+                    <TextBlock Canvas.Left="302" Canvas.Top="111" Text="X" Style="{StaticResource Letter}" />
+                    <TextBlock Canvas.Left="352" Canvas.Top="111" Text="B" Style="{StaticResource Letter}" />
+                    <TextBlock Canvas.Left="327" Canvas.Top="136" Text="A" Style="{StaticResource Letter}" />
+
+                    <!-- Center buttons -->
+                    <Ellipse x:Name="BtnBack" Canvas.Left="185" Canvas.Top="116" Width="14" Height="14" Style="{StaticResource Part}" />
+                    <Ellipse x:Name="BtnStart" Canvas.Left="241" Canvas.Top="116" Width="14" Height="14" Style="{StaticResource Part}" />
+                    <Ellipse x:Name="BtnGuide" Canvas.Left="210" Canvas.Top="94" Width="20" Height="20" Style="{StaticResource Part}" />
+                </Canvas>
+            </Viewbox>
+
+            <TextBlock x:Name="NoStateText" Text="{x:Static res:Strings.LiveNoState}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" IsHitTestVisible="False" />
+        </Grid>
+    </Grid>
+</UserControl>

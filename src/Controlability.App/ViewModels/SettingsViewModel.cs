@@ -279,7 +279,7 @@ public sealed partial class SettingsViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(HasKeyboardProfile));
     }
 
-    private static bool SameInput(string a, string b)
+    internal static bool SameInput(string a, string b)
     {
         var aIsMouse = MouseButtonNames.TryParse(a, out var mouseA);
         var bIsMouse = MouseButtonNames.TryParse(b, out var mouseB);
@@ -395,7 +395,7 @@ public sealed partial class SettingsViewModel : ObservableObject, IDisposable
         ControllerRows.Add(new ControllerRow(ControlLabels.Xbox(KeyboardControl.RightTrigger), rightTrigger));
     }
 
-    private static XboxButton XboxButtonOf(KeyboardControl control) => control switch
+    internal static XboxButton XboxButtonOf(KeyboardControl control) => control switch
     {
         KeyboardControl.A => XboxButton.A,
         KeyboardControl.B => XboxButton.B,

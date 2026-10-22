@@ -53,6 +53,9 @@ public interface IEngine : IDisposable
     /// <summary>Number of input-loop ticks that threw (and were survived).</summary>
     long TickErrorCount { get; }
 
+    /// <summary>Devices HidHide currently hides from games (snapshot).</summary>
+    IReadOnlyCollection<DeviceId> HiddenDevices { get; }
+
     /// <summary>Raised on the input thread when devices or slots changed. The UI must marshal to its own thread.</summary>
     event Action? Changed;
 
@@ -80,6 +83,21 @@ public interface IEngine : IDisposable
 
     /// <summary>Rumbles the slot's device for 300 ms and blinks its LED (if it has one), so the user can find it.</summary>
     void Identify(int slot);
+
+    /// <summary>
+    /// Re-reads the profile from the store and applies it to every slot that uses it. The slot's mapping is swapped
+    /// in one step on the input thread, so a report never mixes old and new settings. Does nothing if no slot uses it.
+    /// </summary>
+    void ReloadProfile(string profileId);
+
+    /// <summary>Hides a device from games, or gives it back. Does nothing when HidHide is missing or off.</summary>
+    void SetDeviceHidden(DeviceId device, bool hidden);
+
+    /// <summary>Rumbles one device for 300 ms, assigned to a slot or not.</summary>
+    void TestRumble(DeviceId device);
+
+    /// <summary>Sets a device's light bar. A profile applied later (or a reconnect) sets the slot color again.</summary>
+    void SetLedColor(DeviceId device, byte r, byte g, byte b);
 
     /// <summary>
     /// Switches the keyboard mode at runtime and saves it. All pads are released and reconnected in slot order, because

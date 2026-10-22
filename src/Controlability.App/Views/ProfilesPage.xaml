@@ -1,0 +1,402 @@
+<Page x:Class="Controlability.App.Views.ProfilesPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:res="clr-namespace:Controlability.App.Resources"
+      xmlns:controls="clr-namespace:Controlability.App.Controls"
+      xmlns:views="clr-namespace:Controlability.App.Views"
+      xmlns:vm="clr-namespace:Controlability.App.ViewModels"
+      Title="{x:Static res:Strings.NavProfiles}"
+      PreviewKeyDown="OnPreviewKeyDown" PreviewMouseDown="OnPreviewMouseDown">
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+        <Style x:Key="SectionTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style x:Key="Hint" TargetType="TextBlock">
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+            <Setter Property="Margin" Value="0,2,0,8" />
+        </Style>
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0,0,12,0" />
+        </Style>
+        <Style x:Key="SliderValue" TargetType="TextBlock">
+            <Setter Property="Width" Value="44" />
+            <Setter Property="TextAlignment" Value="Right" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="Row" TargetType="Grid">
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+    </Page.Resources>
+
+    <Grid Margin="24,8,24,16">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Profile list -->
+        <DockPanel Margin="0,0,16,0">
+            <TextBlock DockPanel.Dock="Top" Text="{x:Static res:Strings.NavProfiles}" FontSize="28" FontWeight="SemiBold" Margin="0,0,0,12" />
+            <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                <Button Content="{x:Static res:Strings.ProfilesImport}" Command="{Binding ImportCommand}" Margin="0,0,6,6" />
+                <Button Content="{x:Static res:Strings.ProfilesExport}" Command="{Binding ExportCommand}" Margin="0,0,6,6" />
+                <Button Content="{x:Static res:Strings.ProfilesDuplicate}" Command="{Binding DuplicateCommand}" Margin="0,0,6,6" />
+                <Button Content="{x:Static res:Strings.ProfilesDelete}" Command="{Binding DeleteCommand}" Margin="0,0,6,6"
+                        ToolTip="{x:Static res:Strings.ProfilesDeleteShipped}" />
+            </WrapPanel>
+            <TextBlock DockPanel.Dock="Bottom" Text="{Binding StatusText}" Style="{StaticResource Hint}" />
+            <ListBox ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile, Mode=TwoWay}"
+                     DisplayMemberPath="Name" AutomationProperties.Name="{x:Static res:Strings.ProfilesList}" />
+        </DockPanel>
+
+        <views:EmptyStateView Grid.Column="1" Symbol="Document24"
+                              Title="{x:Static res:Strings.ProfilesEmptyTitle}" Message="{x:Static res:Strings.ProfilesEmptyHint}"
+                              Visibility="{Binding HasNoEditor, Converter={StaticResource BoolToVisibility}}" />
+
+        <!-- Editor -->
+        <Grid Grid.Column="1" DataContext="{Binding Editor}"
+              Visibility="{Binding DataContext.HasEditor, RelativeSource={RelativeSource AncestorType=Page}, Converter={StaticResource BoolToVisibility}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <ui:TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" FontSize="18"
+                            PlaceholderText="{x:Static res:Strings.EditorName}"
+                            AutomationProperties.Name="{x:Static res:Strings.EditorName}" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12,0,0,0">
+                    <Button Content="{x:Static res:Strings.EditorSave}" Command="{Binding SaveCommand}" Margin="0,0,6,0" />
+                    <Button Content="{x:Static res:Strings.EditorRevert}" Command="{Binding RevertCommand}" Margin="0,0,6,0" />
+                    <Button Content="{x:Static res:Strings.EditorReset}" Command="{Binding ResetToDefaultCommand}" />
+                </StackPanel>
+            </Grid>
+
+            <StackPanel Grid.Row="1" Margin="0,0,0,8">
+                <TextBlock Text="{Binding ValidationText}" TextWrapping="Wrap"
+                           Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                           Visibility="{Binding HasValidationText, Converter={StaticResource BoolToVisibility}}" />
+                <TextBlock Text="{Binding StatusText}" Style="{StaticResource Hint}" Margin="0" />
+            </StackPanel>
+
+            <TabControl Grid.Row="2">
+                <!-- Buttons -->
+                <TabItem Header="{x:Static res:Strings.TabButtons}">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <Grid Margin="0,12,20,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="3*" />
+                                <ColumnDefinition Width="16" />
+                                <ColumnDefinition Width="2*" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="{x:Static res:Strings.ButtonsHint}" Style="{StaticResource Hint}" />
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding BindPrompt}" FontWeight="SemiBold" TextWrapping="Wrap" VerticalAlignment="Center"
+                                               AutomationProperties.LiveSetting="Assertive" />
+                                    <Button Grid.Column="1" Content="{x:Static res:Strings.ButtonCancel}" Command="{Binding CancelBindCommand}"
+                                            Visibility="{Binding IsBinding, Converter={StaticResource BoolToVisibility}}" />
+                                </Grid>
+                                <ItemsControl ItemsSource="{Binding ButtonRows}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="{x:Type vm:ButtonBindingRow}">
+                                            <Grid Margin="0,0,0,6">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="140" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="{Binding Label}" VerticalAlignment="Center" />
+                                                <TextBlock Grid.Column="1" Text="{Binding SourceText}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                                <Button Grid.Column="2" Command="{Binding BindCommand}" Margin="8,0,6,0" MinWidth="64"
+                                                        AutomationProperties.Name="{Binding Label}">
+                                                    <Button.Style>
+                                                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                                            <Setter Property="Content" Value="{x:Static res:Strings.ButtonBind}" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsBinding}" Value="True">
+                                                                    <Setter Property="Content" Value="..." />
+                                                                    <Setter Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Button.Style>
+                                                </Button>
+                                                <Button Grid.Column="3" Content="{x:Static res:Strings.ButtonClear}" Command="{Binding ClearCommand}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                            <controls:ControllerView Grid.Column="2" VerticalAlignment="Top" Live="{Binding Live}" ShowOutput="True"
+                                                     Title="{x:Static res:Strings.LivePanelOutput}"
+                                                     LeftInner="{Binding LeftInner}" LeftOuter="{Binding LeftOuter}"
+                                                     RightInner="{Binding RightInner}" RightOuter="{Binding RightOuter}" />
+                        </Grid>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- Sticks -->
+                <TabItem Header="{x:Static res:Strings.TabSticks}">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <Grid Margin="0,12,20,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="24" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <StackPanel>
+                                <TextBlock Text="{x:Static res:Strings.StickLeft}" Style="{StaticResource SectionTitle}" Margin="0,0,0,8" />
+                                <controls:StickPreview Live="{Binding Live}" IsRight="False" Inner="{Binding LeftInner}" Outer="{Binding LeftOuter}"
+                                                       HorizontalAlignment="Left" Margin="0,0,0,12" />
+                                <TextBlock Text="{x:Static res:Strings.StickInner}" Style="{StaticResource FieldLabel}" />
+                                <Grid Style="{StaticResource Row}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Slider Minimum="0" Maximum="0.9" TickFrequency="0.01" Value="{Binding LeftInner, Mode=TwoWay}"
+                                            AutomationProperties.Name="{x:Static res:Strings.StickInner}" />
+                                    <TextBlock Grid.Column="1" Text="{Binding LeftInner, StringFormat=N2}" Style="{StaticResource SliderValue}" />
+                                </Grid>
+                                <TextBlock Text="{x:Static res:Strings.StickOuter}" Style="{StaticResource FieldLabel}" />
+                                <Grid Style="{StaticResource Row}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Slider Minimum="0.1" Maximum="1" TickFrequency="0.01" Value="{Binding LeftOuter, Mode=TwoWay}"
+                                            AutomationProperties.Name="{x:Static res:Strings.StickOuter}" />
+                                    <TextBlock Grid.Column="1" Text="{Binding LeftOuter, StringFormat=N2}" Style="{StaticResource SliderValue}" />
+                                </Grid>
+                                <TextBlock Text="{x:Static res:Strings.StickCurve}" Style="{StaticResource FieldLabel}" Margin="0,0,0,4" />
+                                <ComboBox ItemsSource="{Binding CurveOptions}" SelectedItem="{Binding LeftCurve, Mode=TwoWay}" MinWidth="140" HorizontalAlignment="Left"
+                                          AutomationProperties.Name="{x:Static res:Strings.StickCurve}" />
+                                <controls:CurveGraph Samples="{Binding LeftCurveSamples}" HorizontalAlignment="Left" Margin="0,8,0,0" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="{x:Static res:Strings.StickRight}" Style="{StaticResource SectionTitle}" Margin="0,0,0,8" />
+                                <controls:StickPreview Live="{Binding Live}" IsRight="True" Inner="{Binding RightInner}" Outer="{Binding RightOuter}"
+                                                       HorizontalAlignment="Left" Margin="0,0,0,12" />
+                                <TextBlock Text="{x:Static res:Strings.StickInner}" Style="{StaticResource FieldLabel}" />
+                                <Grid Style="{StaticResource Row}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Slider Minimum="0" Maximum="0.9" TickFrequency="0.01" Value="{Binding RightInner, Mode=TwoWay}"
+                                            AutomationProperties.Name="{x:Static res:Strings.StickInner}" />
+                                    <TextBlock Grid.Column="1" Text="{Binding RightInner, StringFormat=N2}" Style="{StaticResource SliderValue}" />
+                                </Grid>
+                                <TextBlock Text="{x:Static res:Strings.StickOuter}" Style="{StaticResource FieldLabel}" />
+                                <Grid Style="{StaticResource Row}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Slider Minimum="0.1" Maximum="1" TickFrequency="0.01" Value="{Binding RightOuter, Mode=TwoWay}"
+                                            AutomationProperties.Name="{x:Static res:Strings.StickOuter}" />
+                                    <TextBlock Grid.Column="1" Text="{Binding RightOuter, StringFormat=N2}" Style="{StaticResource SliderValue}" />
+                                </Grid>
+                                <TextBlock Text="{x:Static res:Strings.StickCurve}" Style="{StaticResource FieldLabel}" Margin="0,0,0,4" />
+                                <ComboBox ItemsSource="{Binding CurveOptions}" SelectedItem="{Binding RightCurve, Mode=TwoWay}" MinWidth="140" HorizontalAlignment="Left"
+                                          AutomationProperties.Name="{x:Static res:Strings.StickCurve}" />
+                                <controls:CurveGraph Samples="{Binding RightCurveSamples}" HorizontalAlignment="Left" Margin="0,8,0,0" />
+                            </StackPanel>
+
+                            <TextBlock Grid.Row="1" Grid.ColumnSpan="3" Text="{x:Static res:Strings.StickPreviewHint}" Style="{StaticResource Hint}" Margin="0,12,0,0" />
+                        </Grid>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- Triggers -->
+                <TabItem Header="{x:Static res:Strings.TabTriggers}">
+                    <StackPanel Margin="0,12,20,12">
+                        <TextBlock Text="{x:Static res:Strings.TriggerDeadZoneLabel}" Style="{StaticResource FieldLabel}" />
+                        <Grid Style="{StaticResource Row}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Slider Minimum="0" Maximum="0.5" TickFrequency="0.01" Value="{Binding TriggerDeadZone, Mode=TwoWay}"
+                                    AutomationProperties.Name="{x:Static res:Strings.TriggerDeadZoneLabel}" />
+                            <TextBlock Grid.Column="1" Text="{Binding TriggerDeadZone, StringFormat=N2}" Style="{StaticResource SliderValue}" />
+                        </Grid>
+                        <ui:ToggleSwitch IsChecked="{Binding TriggerDigital, Mode=TwoWay}" Content="{x:Static res:Strings.TriggerDigitalLabel}"
+                                         AutomationProperties.Name="{x:Static res:Strings.TriggerDigitalLabel}" Margin="0,4,0,8" />
+                        <TextBlock Text="{x:Static res:Strings.TriggerThresholdLabel}" Style="{StaticResource FieldLabel}" />
+                        <Grid Style="{StaticResource Row}" IsEnabled="{Binding TriggerDigital}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Slider Minimum="0.05" Maximum="1" TickFrequency="0.01" Value="{Binding TriggerThreshold, Mode=TwoWay}"
+                                    AutomationProperties.Name="{x:Static res:Strings.TriggerThresholdLabel}" />
+                            <TextBlock Grid.Column="1" Text="{Binding TriggerThreshold, StringFormat=N2}" Style="{StaticResource SliderValue}" />
+                        </Grid>
+                    </StackPanel>
+                </TabItem>
+
+                <!-- Keyboard (keyboard profiles only) -->
+                <TabItem Header="{x:Static res:Strings.TabKeyboard}"
+                         Visibility="{Binding IsKeyboardProfile, Converter={StaticResource BoolToVisibility}}">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="0,12,20,12">
+                            <TextBlock Text="{x:Static res:Strings.KeyboardTabHint}" Style="{StaticResource Hint}" />
+                            <TextBlock Text="{x:Static res:Strings.MouseSensitivity}" Style="{StaticResource FieldLabel}" />
+                            <Grid Style="{StaticResource Row}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Slider Minimum="0.1" Maximum="5" TickFrequency="0.1" Value="{Binding MouseSensitivity, Mode=TwoWay}"
+                                        AutomationProperties.Name="{x:Static res:Strings.MouseSensitivity}" />
+                                <TextBlock Grid.Column="1" Text="{Binding MouseSensitivity, StringFormat=N1}" Style="{StaticResource SliderValue}" />
+                            </Grid>
+                            <TextBlock Text="{x:Static res:Strings.MouseDecay}" Style="{StaticResource FieldLabel}" />
+                            <Grid Style="{StaticResource Row}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Slider Minimum="10" Maximum="500" TickFrequency="5" IsSnapToTickEnabled="True" Value="{Binding DecayMs, Mode=TwoWay}"
+                                        AutomationProperties.Name="{x:Static res:Strings.MouseDecay}" />
+                                <TextBlock Grid.Column="1" Text="{Binding DecayMs, StringFormat=N0}" Style="{StaticResource SliderValue}" />
+                            </Grid>
+
+                            <Grid Margin="0,4,0,8" Visibility="{Binding IsCapturing, Converter={StaticResource BoolToVisibility}}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding CapturePrompt}" FontWeight="SemiBold" TextWrapping="Wrap" VerticalAlignment="Center"
+                                           AutomationProperties.LiveSetting="Assertive" />
+                                <Button Grid.Column="1" Content="{x:Static res:Strings.ButtonCancel}" Command="{Binding CancelKeyCaptureCommand}" />
+                            </Grid>
+
+                            <ItemsControl ItemsSource="{Binding KeyRows}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type vm:EditorKeyRow}">
+                                        <Grid Margin="0,0,0,6">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="170" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding Label}" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="1" Text="{Binding KeyText}" VerticalAlignment="Center" FontWeight="SemiBold" />
+                                            <Button Grid.Column="2" Command="{Binding ChangeCommand}" Margin="8,0,6,0" MinWidth="64"
+                                                    AutomationProperties.Name="{Binding Label}">
+                                                <Button.Style>
+                                                    <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                                        <Setter Property="Content" Value="{x:Static res:Strings.ButtonBind}" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsCapturing}" Value="True">
+                                                                <Setter Property="Content" Value="..." />
+                                                                <Setter Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Style>
+                                            </Button>
+                                            <Button Grid.Column="3" Content="{x:Static res:Strings.ButtonClear}" Command="{Binding ClearCommand}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- Applies to -->
+                <TabItem Header="{x:Static res:Strings.TabAppliesTo}">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="0,12,20,12">
+                            <TextBlock Text="{x:Static res:Strings.AppliesControllers}" Style="{StaticResource SectionTitle}" />
+                            <TextBlock Text="{x:Static res:Strings.AppliesGamesHint}" Style="{StaticResource Hint}" />
+                            <ItemsControl ItemsSource="{Binding ControllerTypes}" Margin="0,0,0,16">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type vm:ControllerTypeOption}">
+                                        <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}" Content="{Binding Label}" Margin="0,0,16,0" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <TextBlock Text="{x:Static res:Strings.AppliesGames}" Style="{StaticResource SectionTitle}" Margin="0,0,0,8" />
+                            <ItemsControl ItemsSource="{Binding ProcessNames}" Margin="0,0,0,8">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding}" VerticalAlignment="Center" FontWeight="SemiBold" />
+                                            <Button Grid.Column="1" Content="{x:Static res:Strings.GameRemove}"
+                                                    Command="{Binding DataContext.RemoveProcessCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <ui:TextBox Text="{Binding NewProcessName, UpdateSourceTrigger=PropertyChanged}"
+                                            PlaceholderText="{x:Static res:Strings.GameNameHint}"
+                                            AutomationProperties.Name="{x:Static res:Strings.GameNameHint}" />
+                                <Button Grid.Column="1" Content="{x:Static res:Strings.GameAdd}" Margin="8,0,0,0" Command="{Binding AddProcessCommand}" />
+                                <Button Grid.Column="2" Content="{x:Static res:Strings.AppliesBrowse}" Margin="8,0,0,0" Command="{Binding BrowseProcessCommand}" />
+                            </Grid>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <ComboBox ItemsSource="{Binding RunningApps}" SelectedItem="{Binding SelectedRunningApp, Mode=TwoWay}"
+                                          AutomationProperties.Name="{x:Static res:Strings.AppliesAddRunning}" />
+                                <Button Grid.Column="1" Content="{x:Static res:Strings.AppliesAddRunning}" Margin="8,0,0,0" Command="{Binding AddSelectedProcessCommand}" />
+                                <Button Grid.Column="2" Content="{x:Static res:Strings.AppliesRefresh}" Margin="8,0,0,0" Command="{Binding RefreshRunningAppsCommand}" />
+                            </Grid>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+            </TabControl>
+        </Grid>
+    </Grid>
+</Page>

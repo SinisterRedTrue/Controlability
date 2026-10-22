@@ -140,4 +140,93 @@
   <data name="ColKeyboard" xml:space="preserve"><value>Keyboard</value></data>
   <data name="ColController" xml:space="preserve"><value>Controller button</value></data>
   <data name="PadNotMapped" xml:space="preserve"><value>not mapped</value></data>
+  <data name="StatusSaved" xml:space="preserve"><value>Saved "{0}".</value></data>
+  <data name="StatusReverted" xml:space="preserve"><value>Changes undone.</value></data>
+  <data name="StatusReset" xml:space="preserve"><value>Reset to the default settings. Click Save to keep them.</value></data>
+  <data name="BindPrompt" xml:space="preserve"><value>Press a button on the controller for {0}... (Esc cancels)</value></data>
+  <data name="BindNoController" xml:space="preserve"><value>Connect a controller to bind its buttons.</value></data>
+  <data name="BindTimedOut" xml:space="preserve"><value>No button was pressed. Try again.</value></data>
+  <data name="ErrNameEmpty" xml:space="preserve"><value>The profile needs a name.</value></data>
+  <data name="ErrLeftDeadZone" xml:space="preserve"><value>Left stick: the inner dead zone must be smaller than the outer one.</value></data>
+  <data name="ErrRightDeadZone" xml:space="preserve"><value>Right stick: the inner dead zone must be smaller than the outer one.</value></data>
+  <data name="BrowseGameTitle" xml:space="preserve"><value>Pick the game's program</value></data>
+  <data name="FileFilterPrograms" xml:space="preserve"><value>Programs (*.exe)|*.exe|All files (*.*)|*.*</value></data>
+  <data name="FileFilterProfiles" xml:space="preserve"><value>Profile files (*.json)|*.json|All files (*.*)|*.*</value></data>
+  <data name="DiscardTitle" xml:space="preserve"><value>Unsaved changes</value></data>
+  <data name="DiscardMessage" xml:space="preserve"><value>This profile has changes that are not saved. Discard them?</value></data>
+  <data name="DeleteTitle" xml:space="preserve"><value>Delete profile</value></data>
+  <data name="DeleteMessage" xml:space="preserve"><value>Delete the profile "{0}"? This cannot be undone.</value></data>
+  <data name="ImportTitle" xml:space="preserve"><value>Import a profile</value></data>
+  <data name="ExportTitle" xml:space="preserve"><value>Export the profile</value></data>
+  <data name="CopyName" xml:space="preserve"><value>{0} (copy)</value></data>
+  <data name="StatusDuplicated" xml:space="preserve"><value>Created "{0}".</value></data>
+  <data name="StatusDeleted" xml:space="preserve"><value>Deleted "{0}".</value></data>
+  <data name="StatusImported" xml:space="preserve"><value>Imported "{0}".</value></data>
+  <data name="StatusImportFailed" xml:space="preserve"><value>Could not import: {0}</value></data>
+  <data name="StatusExported" xml:space="preserve"><value>Exported to {0}.</value></data>
+  <data name="CapRumble" xml:space="preserve"><value>Rumble</value></data>
+  <data name="CapLed" xml:space="preserve"><value>Light bar</value></data>
+  <data name="CapGyro" xml:space="preserve"><value>Gyro</value></data>
+  <data name="CapTouchpad" xml:space="preserve"><value>Touchpad</value></data>
+  <data name="CapBattery" xml:space="preserve"><value>Battery</value></data>
+  <data name="CapNone" xml:space="preserve"><value>None</value></data>
+  <data name="LedInvalid" xml:space="preserve"><value>Enter a color like #FF8800.</value></data>
+  <data name="DevicesDetected" xml:space="preserve"><value>Detected devices</value></data>
+  <data name="LabelType" xml:space="preserve"><value>Type</value></data>
+  <data name="LabelConnection" xml:space="preserve"><value>Connection</value></data>
+  <data name="LabelVidPid" xml:space="preserve"><value>VID:PID</value></data>
+  <data name="LabelSerial" xml:space="preserve"><value>Serial</value></data>
+  <data name="LabelHidPath" xml:space="preserve"><value>HID path</value></data>
+  <data name="LabelCapabilities" xml:space="preserve"><value>Capabilities</value></data>
+  <data name="LabelAssignment" xml:space="preserve"><value>Assignment</value></data>
+  <data name="HideFromGames" xml:space="preserve"><value>Hide from games</value></data>
+  <data name="HideFromGamesHint" xml:space="preserve"><value>HidHide hides the real controller, so games only see the virtual Xbox pad.</value></data>
+  <data name="HidHideMissingHint" xml:space="preserve"><value>HidHide is not installed, so devices cannot be hidden.</value></data>
+  <data name="RumbleTest" xml:space="preserve"><value>Rumble test</value></data>
+  <data name="LedColor" xml:space="preserve"><value>Light bar color</value></data>
+  <data name="LedApply" xml:space="preserve"><value>Apply</value></data>
+  <data name="LivePanelRaw" xml:space="preserve"><value>Raw input</value></data>
+  <data name="LivePanelOutput" xml:space="preserve"><value>Xbox output</value></data>
+  <data name="LiveNoState" xml:space="preserve"><value>Waiting for input...</value></data>
+  <data name="ProfilesList" xml:space="preserve"><value>Profiles</value></data>
+  <data name="ProfilesImport" xml:space="preserve"><value>Import</value></data>
+  <data name="ProfilesExport" xml:space="preserve"><value>Export</value></data>
+  <data name="ProfilesDuplicate" xml:space="preserve"><value>Duplicate</value></data>
+  <data name="ProfilesDelete" xml:space="preserve"><value>Delete</value></data>
+  <data name="ProfilesDeleteShipped" xml:space="preserve"><value>Shipped profiles cannot be deleted. Use Reset to default instead.</value></data>
+  <data name="ProfilesEmptyTitle" xml:space="preserve"><value>No profile selected</value></data>
+  <data name="ProfilesEmptyHint" xml:space="preserve"><value>Pick a profile on the left to edit it.</value></data>
+  <data name="EditorSave" xml:space="preserve"><value>Save</value></data>
+  <data name="EditorRevert" xml:space="preserve"><value>Revert</value></data>
+  <data name="EditorReset" xml:space="preserve"><value>Reset to default</value></data>
+  <data name="EditorName" xml:space="preserve"><value>Name</value></data>
+  <data name="TabButtons" xml:space="preserve"><value>Buttons</value></data>
+  <data name="TabSticks" xml:space="preserve"><value>Sticks</value></data>
+  <data name="TabTriggers" xml:space="preserve"><value>Triggers</value></data>
+  <data name="TabKeyboard" xml:space="preserve"><value>Keyboard</value></data>
+  <data name="TabAppliesTo" xml:space="preserve"><value>Applies to</value></data>
+  <data name="ButtonsHint" xml:space="preserve"><value>Click Bind, then press the button on the controller that should send it. Esc cancels after 5 seconds without a press.</value></data>
+  <data name="ButtonBind" xml:space="preserve"><value>Bind</value></data>
+  <data name="ButtonClear" xml:space="preserve"><value>Clear</value></data>
+  <data name="ButtonCancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="StickLeft" xml:space="preserve"><value>Left stick</value></data>
+  <data name="StickRight" xml:space="preserve"><value>Right stick</value></data>
+  <data name="StickInner" xml:space="preserve"><value>Inner dead zone</value></data>
+  <data name="StickOuter" xml:space="preserve"><value>Outer dead zone</value></data>
+  <data name="StickCurve" xml:space="preserve"><value>Response curve</value></data>
+  <data name="StickPreviewHint" xml:space="preserve"><value>Ring: the stick as it is. Blue dot: what the game gets with the values above.</value></data>
+  <data name="TriggerDeadZoneLabel" xml:space="preserve"><value>Dead zone</value></data>
+  <data name="TriggerDigitalLabel" xml:space="preserve"><value>Digital (all or nothing)</value></data>
+  <data name="TriggerThresholdLabel" xml:space="preserve"><value>Press point</value></data>
+  <data name="KeyboardTabHint" xml:space="preserve"><value>These keys and mouse buttons drive the keyboard pad in keyboard-as-controller mode.</value></data>
+  <data name="MouseSensitivity" xml:space="preserve"><value>Mouse sensitivity</value></data>
+  <data name="MouseDecay" xml:space="preserve"><value>Mouse decay (ms)</value></data>
+  <data name="AppliesControllers" xml:space="preserve"><value>Controller types</value></data>
+  <data name="AppliesGames" xml:space="preserve"><value>Games (program names)</value></data>
+  <data name="AppliesGamesHint" xml:space="preserve"><value>Leave both empty for a profile that fits every controller.</value></data>
+  <data name="AppliesNoGames" xml:space="preserve"><value>No games listed.</value></data>
+  <data name="AppliesBrowse" xml:space="preserve"><value>Browse...</value></data>
+  <data name="AppliesAddRunning" xml:space="preserve"><value>Add running program</value></data>
+  <data name="AppliesRefresh" xml:space="preserve"><value>Refresh</value></data>
+  <data name="TabKeyboardOnly" xml:space="preserve"><value>Only for keyboard profiles. Tick Keyboard under Applies to.</value></data>
 </root>

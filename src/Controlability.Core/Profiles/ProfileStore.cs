@@ -44,6 +44,26 @@ public sealed partial class ProfileStore
 
     public Profile? Get(string id) => Scan().FirstOrDefault(entry => entry.Profile.Id == id).Profile;
 
+    /// <summary>
+    /// Reads one profile from JSON text (for importing a file): migrates and validates it like a stored file.
+    /// Returns false with a readable reason instead of throwing.
+    /// </summary>
+    public bool TryParse(string text, out Profile profile, out string error)
+    {
+        try
+        {
+            profile = Parse(text);
+            error = "";
+            return true;
+        }
+        catch (ProfileFormatException ex)
+        {
+            profile = Profile.Generic;
+            error = ex.Message;
+            return false;
+        }
+    }
+
     /// <summary>Writes the profile atomically; an existing file for the same id is replaced wherever it is named.</summary>
     public void Save(Profile profile)
     {

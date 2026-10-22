@@ -69,6 +69,26 @@ public sealed class EngineHidingTests : IDisposable
     }
 
     [Fact]
+    public void SetDeviceHidden_toggles_one_device_and_reports_it()
+    {
+        _settings = new Settings { SlotPolicy = SlotPolicy.Manual };
+        Plug(Pad1);
+        Engine.Tick();
+        Engine.HiddenDevices.Should().BeEmpty();
+        _events.Clear();
+
+        Engine.SetDeviceHidden(Pad1.Id, true);
+        Engine.Tick();
+        Engine.HiddenDevices.Should().Equal(Pad1.Id);
+
+        Engine.SetDeviceHidden(Pad1.Id, false);
+        Engine.Tick();
+
+        Engine.HiddenDevices.Should().BeEmpty();
+        _events.Should().Equal("hide pad1", "unhide pad1");
+    }
+
+    [Fact]
     public void Pausing_unhides_and_resuming_hides_again()
     {
         Plug(Pad1);
