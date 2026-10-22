@@ -1,12 +1,12 @@
 using System.Runtime.InteropServices;
 
-namespace Controlability.Cli;
+namespace Controlability.Engine;
 
 /// <summary>
 /// Sleeps with a high-resolution waitable timer (about 0.5 ms granularity) instead of busy-spinning,
 /// so a 1000 Hz poll loop stays cheap. Falls back to <see cref="Thread.Sleep(int)"/> if the timer is unavailable.
 /// </summary>
-internal sealed class HighResTimer : IDisposable
+public sealed class HighResTimer : IDisposable
 {
     private const uint CreateWaitableTimerHighResolution = 0x00000002;
     private const uint TimerAllAccess = 0x1F0003;

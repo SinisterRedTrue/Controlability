@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Controlability.Core.Abstractions;
 using Controlability.Core.Mapping;
 using Controlability.Core.Models;
+using Controlability.Engine;
 using Controlability.Output.ViGEm;
 
 namespace Controlability.Cli;
@@ -27,8 +28,6 @@ internal static partial class Commands
         Console.WriteLine("Install it from https://github.com/nefarius/ViGEmBus/releases and reboot.");
         return 1;
     }
-
-    public static int Forward(int index, CancellationToken cancel) => RunForward(index, null, cancel);
 
     public static int Latency(int seconds, int index, CancellationToken cancel)
     {

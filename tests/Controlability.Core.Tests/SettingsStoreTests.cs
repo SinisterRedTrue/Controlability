@@ -19,6 +19,8 @@ public class SettingsStoreTests
         settings.Language.Should().Be("system");
         settings.LogLevel.Should().Be(AppLogLevel.Information);
         settings.WindowPlacement.Should().BeNull();
+        settings.GracePeriodSeconds.Should().Be(10);
+        settings.RememberedSlots.Should().BeEmpty();
     }
 
     [Fact]
@@ -26,7 +28,7 @@ public class SettingsStoreTests
     {
         using var temp = new TempFolder();
 
-        new SettingsStore(temp.Combine("settings.json")).Load().Should().Be(new Settings.Settings());
+        new SettingsStore(temp.Combine("settings.json")).Load().Should().BeEquivalentTo(new Settings.Settings());
     }
 
     [Fact]
@@ -44,12 +46,14 @@ public class SettingsStoreTests
             Theme = AppTheme.Dark,
             Language = "de",
             LogLevel = AppLogLevel.Debug,
+            GracePeriodSeconds = 4,
+            RememberedSlots = new() { ["serial-1"] = 2 },
             WindowPlacement = new WindowPlacement(10, 20, 1000, 700, true),
         };
 
         store.Save(settings);
 
-        store.Load().Should().Be(settings);
+        store.Load().Should().BeEquivalentTo(settings);
         File.ReadAllText(store.Path).Should().Contain("\"pollingRateHz\": 250").And.Contain("\"KeyboardAsController\"");
         Directory.GetFiles(temp.Combine("sub"), "*.tmp").Should().BeEmpty();
     }
@@ -79,7 +83,7 @@ public class SettingsStoreTests
         File.WriteAllText(path, content);
         var store = new SettingsStore(path);
 
-        store.Load().Should().Be(new Settings.Settings());
+        store.Load().Should().BeEquivalentTo(new Settings.Settings());
 
         File.Exists(path).Should().BeFalse();
         File.ReadAllText(store.BrokenPath).Should().Be(content);

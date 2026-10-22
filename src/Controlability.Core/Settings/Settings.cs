@@ -51,6 +51,12 @@ public sealed record Settings
     /// <summary>Engine polling rate; 1000, 500 or 250.</summary>
     public int PollingRateHz { get; set; } = 1000;
 
+    /// <summary>How long a slot keeps its virtual pad after its device vanished (Bluetooth drops).</summary>
+    public int GracePeriodSeconds { get; set; } = 10;
+
+    /// <summary>Stable device id to the slot (0..3) it had last; used by <see cref="SlotPolicy.Remember"/>.</summary>
+    public Dictionary<string, int> RememberedSlots { get; set; } = [];
+
     public bool HidHideEnabled { get; set; } = true;
 
     public AppTheme Theme { get; set; } = AppTheme.System;
