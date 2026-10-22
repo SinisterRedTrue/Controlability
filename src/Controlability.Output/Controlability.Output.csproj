@@ -4,4 +4,12 @@
     <ProjectReference Include="..\Controlability.Core\Controlability.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Nefarius.ViGEm.Client" Version="1.21.256" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Controlability.Engine.Tests" />
+  </ItemGroup>
+
 </Project>

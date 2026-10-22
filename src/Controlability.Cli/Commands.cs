@@ -5,7 +5,7 @@ using Controlability.Input.Sdl;
 
 namespace Controlability.Cli;
 
-internal static class Commands
+internal static partial class Commands
 {
     private const double PollIntervalMs = 1.0;
     private const int PrintIntervalMs = 33;
