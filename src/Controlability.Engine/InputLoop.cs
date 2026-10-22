@@ -10,7 +10,7 @@ public sealed class InputLoop : IDisposable
 {
     private readonly Action _tick;
     private readonly Action? _onExit;
-    private readonly double _periodMs;
+    private long _periodTicks;
     private readonly Thread _thread;
     private volatile bool _stop;
 
@@ -19,7 +19,7 @@ public sealed class InputLoop : IDisposable
         ArgumentOutOfRangeException.ThrowIfLessThan(rateHz, 1);
         _tick = tick;
         _onExit = onExit;
-        _periodMs = 1000.0 / rateHz;
+        Rate = rateHz;
         _thread = new Thread(Run)
         {
             Name = "Controlability input",
@@ -30,13 +30,24 @@ public sealed class InputLoop : IDisposable
 
     public bool IsRunning => _thread.IsAlive;
 
+    /// <summary>Ticks per second; can be changed while the loop runs and applies from the next tick.</summary>
+    public int Rate
+    {
+        get => (int)Math.Round((double)Stopwatch.Frequency / Interlocked.Read(ref _periodTicks));
+        set
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThan(value, 1);
+            Interlocked.Exchange(ref _periodTicks, Stopwatch.Frequency / value);
+        }
+    }
+
     public void Start() => _thread.Start();
 
     /// <summary>Asks the thread to finish and waits for it, including <c>onExit</c>.</summary>
     public void Stop()
     {
         _stop = true;
-        if (_thread.ThreadState != System.Threading.ThreadState.Unstarted && Thread.CurrentThread != _thread)
+        if ((_thread.ThreadState & System.Threading.ThreadState.Unstarted) == 0 && Thread.CurrentThread != _thread)
         {
             _thread.Join();
         }
@@ -49,12 +60,12 @@ public sealed class InputLoop : IDisposable
         try
         {
             using var timer = new HighResTimer();
-            var periodTicks = (long)(_periodMs * Stopwatch.Frequency / 1000.0);
-            var next = Stopwatch.GetTimestamp() + periodTicks;
+            var next = Stopwatch.GetTimestamp() + Interlocked.Read(ref _periodTicks);
             while (!_stop)
             {
                 _tick();
 
+                var periodTicks = Interlocked.Read(ref _periodTicks);
                 var now = Stopwatch.GetTimestamp();
                 var remaining = next - now;
                 if (remaining > 0)

@@ -341,4 +341,6 @@ public sealed class FakeProfileEditor : IProfileEditor
 public sealed class FakeRunningApps(params string[] names) : IRunningApps
 {
     public IReadOnlyList<string> GetNames() => names;
+
+    public bool IsRunning(string processName) => names.Contains(processName, StringComparer.OrdinalIgnoreCase);
 }

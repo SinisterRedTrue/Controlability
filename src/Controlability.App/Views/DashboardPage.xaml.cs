@@ -13,11 +13,12 @@ public partial class DashboardPage : Page
     private readonly DashboardViewModel _viewModel;
     private Point _dragStart;
 
-    public DashboardPage(DashboardViewModel viewModel)
+    public DashboardPage(DashboardViewModel viewModel, SteamTipViewModel steamTip)
     {
         _viewModel = viewModel;
         DataContext = viewModel;
         InitializeComponent();
+        SteamTipBanner.DataContext = steamTip;
     }
 
     private void OnDeviceMouseDown(object sender, MouseButtonEventArgs e) => _dragStart = e.GetPosition(null);

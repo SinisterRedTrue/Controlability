@@ -161,6 +161,12 @@ public sealed class FakeEngine : IEngine
 
     public void SetLedColor(DeviceId device, byte r, byte g, byte b) => Calls.Add($"SetLedColor:{device}:{r},{g},{b}");
 
+    public void ApplySettings() => Calls.Add("ApplySettings");
+
+    public void UnhideAll() => Calls.Add("UnhideAll");
+
+    public void RestartInput() => Calls.Add("RestartInput");
+
     public bool TryGetLiveState(DeviceId device, out InputState raw, out XboxState mapped)
     {
         mapped = default;

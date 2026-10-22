@@ -20,14 +20,6 @@ public static class Strings
 
     public static string NavSettings => Get(nameof(NavSettings));
 
-    public static string ComingSoonTitle => Get(nameof(ComingSoonTitle));
-
-    public static string ComingSoonDevices => Get(nameof(ComingSoonDevices));
-
-    public static string ComingSoonProfiles => Get(nameof(ComingSoonProfiles));
-
-    public static string ComingSoonSettings => Get(nameof(ComingSoonSettings));
-
     public static string DashboardTitle => Get(nameof(DashboardTitle));
 
     public static string PlayerTitle => Get(nameof(PlayerTitle));
@@ -475,6 +467,176 @@ public static class Strings
     public static string NotifyBatteryCritical => Get(nameof(NotifyBatteryCritical));
 
     public static string TrayTooltipBattery => Get(nameof(TrayTooltipBattery));
+
+    public static string SettingsInput => Get(nameof(SettingsInput));
+
+    public static string SettingsHiding => Get(nameof(SettingsHiding));
+
+    public static string SettingsAppearance => Get(nameof(SettingsAppearance));
+
+    public static string SettingsAdvanced => Get(nameof(SettingsAdvanced));
+
+    public static string SettingsAbout => Get(nameof(SettingsAbout));
+
+    public static string StartWithWindows => Get(nameof(StartWithWindows));
+
+    public static string StartWithWindowsHint => Get(nameof(StartWithWindowsHint));
+
+    public static string StartMinimized => Get(nameof(StartMinimized));
+
+    public static string AutostartFailed => Get(nameof(AutostartFailed));
+
+    public static string ModeSettingLabel => Get(nameof(ModeSettingLabel));
+
+    public static string SlotPolicyLabel => Get(nameof(SlotPolicyLabel));
+
+    public static string SlotPolicyHint => Get(nameof(SlotPolicyHint));
+
+    public static string PolicyAuto => Get(nameof(PolicyAuto));
+
+    public static string PolicyRemember => Get(nameof(PolicyRemember));
+
+    public static string PolicyManual => Get(nameof(PolicyManual));
+
+    public static string PollingRateLabel => Get(nameof(PollingRateLabel));
+
+    public static string PollingRateHint => Get(nameof(PollingRateHint));
+
+    public static string GraceLabel => Get(nameof(GraceLabel));
+
+    public static string GraceHint => Get(nameof(GraceHint));
+
+    public static string GraceNone => Get(nameof(GraceNone));
+
+    public static string GraceSeconds => Get(nameof(GraceSeconds));
+
+    public static string HidHideEnabled => Get(nameof(HidHideEnabled));
+
+    public static string HidHideHint => Get(nameof(HidHideHint));
+
+    public static string UnhideWhilePaused => Get(nameof(UnhideWhilePaused));
+
+    public static string UnhideAllHint => Get(nameof(UnhideAllHint));
+
+    public static string UnhideAllButton => Get(nameof(UnhideAllButton));
+
+    public static string UnhideAllTitle => Get(nameof(UnhideAllTitle));
+
+    public static string UnhideAllConfirm => Get(nameof(UnhideAllConfirm));
+
+    public static string UnhideAllDone => Get(nameof(UnhideAllDone));
+
+    public static string ThemeLabel => Get(nameof(ThemeLabel));
+
+    public static string ThemeSystem => Get(nameof(ThemeSystem));
+
+    public static string ThemeLight => Get(nameof(ThemeLight));
+
+    public static string ThemeDark => Get(nameof(ThemeDark));
+
+    public static string LanguageLabel => Get(nameof(LanguageLabel));
+
+    public static string LanguageSystem => Get(nameof(LanguageSystem));
+
+    public static string LanguageRestart => Get(nameof(LanguageRestart));
+
+    public static string LogLevelLabel => Get(nameof(LogLevelLabel));
+
+    public static string LogDebug => Get(nameof(LogDebug));
+
+    public static string LogInformation => Get(nameof(LogInformation));
+
+    public static string LogWarning => Get(nameof(LogWarning));
+
+    public static string LogError => Get(nameof(LogError));
+
+    public static string OpenLogs => Get(nameof(OpenLogs));
+
+    public static string CopyDiagnostics => Get(nameof(CopyDiagnostics));
+
+    public static string DiagnosticsCopied => Get(nameof(DiagnosticsCopied));
+
+    public static string DiagnosticsCopyFailed => Get(nameof(DiagnosticsCopyFailed));
+
+    public static string AboutVersion => Get(nameof(AboutVersion));
+
+    public static string AboutLicenses => Get(nameof(AboutLicenses));
+
+    public static string AboutOpen => Get(nameof(AboutOpen));
+
+    public static string CrashTitle => Get(nameof(CrashTitle));
+
+    public static string CrashHeading => Get(nameof(CrashHeading));
+
+    public static string CrashText => Get(nameof(CrashText));
+
+    public static string CrashCopy => Get(nameof(CrashCopy));
+
+    public static string CrashClose => Get(nameof(CrashClose));
+
+    public static string SteamTipTitle => Get(nameof(SteamTipTitle));
+
+    public static string SteamTipText => Get(nameof(SteamTipText));
+
+    public static string SteamTipDismiss => Get(nameof(SteamTipDismiss));
+
+    public static string WizardWindowTitle => Get(nameof(WizardWindowTitle));
+
+    public static string WizardStepOf => Get(nameof(WizardStepOf));
+
+    public static string WizardWelcomeTitle => Get(nameof(WizardWelcomeTitle));
+
+    public static string WizardWelcomeText => Get(nameof(WizardWelcomeText));
+
+    public static string WizardWelcomeSteps => Get(nameof(WizardWelcomeSteps));
+
+    public static string WizardDriversTitle => Get(nameof(WizardDriversTitle));
+
+    public static string WizardDriversText => Get(nameof(WizardDriversText));
+
+    public static string WizardViGEmWhy => Get(nameof(WizardViGEmWhy));
+
+    public static string WizardHidHideWhy => Get(nameof(WizardHidHideWhy));
+
+    public static string WizardDriverInstalled => Get(nameof(WizardDriverInstalled));
+
+    public static string WizardDriverMissing => Get(nameof(WizardDriverMissing));
+
+    public static string WizardInstall => Get(nameof(WizardInstall));
+
+    public static string WizardInstallViGEm => Get(nameof(WizardInstallViGEm));
+
+    public static string WizardInstallHidHide => Get(nameof(WizardInstallHidHide));
+
+    public static string WizardRebootNotice => Get(nameof(WizardRebootNotice));
+
+    public static string WizardRechecking => Get(nameof(WizardRechecking));
+
+    public static string WizardControllerTitle => Get(nameof(WizardControllerTitle));
+
+    public static string WizardControllerText => Get(nameof(WizardControllerText));
+
+    public static string WizardControllerWaiting => Get(nameof(WizardControllerWaiting));
+
+    public static string WizardControllerFound => Get(nameof(WizardControllerFound));
+
+    public static string WizardModeTitle => Get(nameof(WizardModeTitle));
+
+    public static string WizardModeText => Get(nameof(WizardModeText));
+
+    public static string WizardModeLater => Get(nameof(WizardModeLater));
+
+    public static string WizardDoneTitle => Get(nameof(WizardDoneTitle));
+
+    public static string WizardDoneText => Get(nameof(WizardDoneText));
+
+    public static string WizardBack => Get(nameof(WizardBack));
+
+    public static string WizardNext => Get(nameof(WizardNext));
+
+    public static string WizardFinish => Get(nameof(WizardFinish));
+
+    public static string WizardSkip => Get(nameof(WizardSkip));
 
     public static string Format(string template, params object[] args) => string.Format(CultureInfo.CurrentCulture, template, args);
 }

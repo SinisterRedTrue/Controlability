@@ -30,10 +30,6 @@
   <data name="NavDevices" xml:space="preserve"><value>Devices</value></data>
   <data name="NavProfiles" xml:space="preserve"><value>Profiles</value></data>
   <data name="NavSettings" xml:space="preserve"><value>Settings</value></data>
-  <data name="ComingSoonTitle" xml:space="preserve"><value>Coming soon</value></data>
-  <data name="ComingSoonDevices" xml:space="preserve"><value>The Devices page is not built yet. It will list every controller and keyboard with details, a live test panel, and rumble and LED tests.</value></data>
-  <data name="ComingSoonProfiles" xml:space="preserve"><value>The Profiles page is not built yet. It will hold the profile list and the button, stick and trigger editor.</value></data>
-  <data name="ComingSoonSettings" xml:space="preserve"><value>The Settings page is not built yet. Until then, the tray menu and the dashboard cover the daily controls.</value></data>
   <data name="DashboardTitle" xml:space="preserve"><value>Dashboard</value></data>
   <data name="PlayerTitle" xml:space="preserve"><value>Player {0}</value></data>
   <data name="SlotEmptyStatus" xml:space="preserve"><value>Empty</value></data>
@@ -258,4 +254,89 @@
   <data name="NotifyBatteryLow" xml:space="preserve"><value>{0}: battery low ({1}%)</value></data>
   <data name="NotifyBatteryCritical" xml:space="preserve"><value>{0}: battery almost empty ({1}%)</value></data>
   <data name="TrayTooltipBattery" xml:space="preserve"><value>P{0} {1}%</value></data>
+  <data name="SettingsInput" xml:space="preserve"><value>Input</value></data>
+  <data name="SettingsHiding" xml:space="preserve"><value>Hiding</value></data>
+  <data name="SettingsAppearance" xml:space="preserve"><value>Appearance</value></data>
+  <data name="SettingsAdvanced" xml:space="preserve"><value>Advanced</value></data>
+  <data name="SettingsAbout" xml:space="preserve"><value>About</value></data>
+  <data name="StartWithWindows" xml:space="preserve"><value>Start Controlability with Windows</value></data>
+  <data name="StartWithWindowsHint" xml:space="preserve"><value>Adds a Run entry for your user account (no admin rights). It starts minimized, in the tray.</value></data>
+  <data name="StartMinimized" xml:space="preserve"><value>Start minimized to the tray</value></data>
+  <data name="AutostartFailed" xml:space="preserve"><value>Windows refused the change to the startup entry.</value></data>
+  <data name="ModeSettingLabel" xml:space="preserve"><value>Keyboard mode</value></data>
+  <data name="SlotPolicyLabel" xml:space="preserve"><value>Player slots</value></data>
+  <data name="SlotPolicyHint" xml:space="preserve"><value>Auto gives the next free slot to each new controller. Remember gives a controller the slot it had last time. Manual leaves the slots empty until you assign them.</value></data>
+  <data name="PolicyAuto" xml:space="preserve"><value>Auto</value></data>
+  <data name="PolicyRemember" xml:space="preserve"><value>Remember</value></data>
+  <data name="PolicyManual" xml:space="preserve"><value>Manual</value></data>
+  <data name="PollingRateLabel" xml:space="preserve"><value>Polling rate</value></data>
+  <data name="PollingRateHint" xml:space="preserve"><value>How often controllers are read and sent to the games. 1000 Hz is the lowest delay; a lower rate uses less CPU.</value></data>
+  <data name="GraceLabel" xml:space="preserve"><value>Bluetooth grace period</value></data>
+  <data name="GraceHint" xml:space="preserve"><value>How long a player's virtual pad stays connected when its controller drops out, so a short Bluetooth gap does not remove the player from the game.</value></data>
+  <data name="GraceNone" xml:space="preserve"><value>None</value></data>
+  <data name="GraceSeconds" xml:space="preserve"><value>{0} seconds</value></data>
+  <data name="HidHideEnabled" xml:space="preserve"><value>Hide physical controllers from games (HidHide)</value></data>
+  <data name="HidHideHint" xml:space="preserve"><value>While a controller drives a virtual pad, HidHide hides the real one so games do not see it twice. It is given back when you exit, pause or unassign it.</value></data>
+  <data name="UnhideWhilePaused" xml:space="preserve"><value>Show the real controllers again while paused</value></data>
+  <data name="UnhideAllHint" xml:space="preserve"><value>Gives every controller this app hid back to Windows right now. Use it if a controller is missing in a game after a crash.</value></data>
+  <data name="UnhideAllButton" xml:space="preserve"><value>Unhide all now</value></data>
+  <data name="UnhideAllTitle" xml:space="preserve"><value>Unhide all controllers</value></data>
+  <data name="UnhideAllConfirm" xml:space="preserve"><value>This tells HidHide to stop hiding every controller Controlability hid. Games may then see a controller twice (the real one and its virtual pad) until you hide them again. Continue?</value></data>
+  <data name="UnhideAllDone" xml:space="preserve"><value>All controllers are visible to Windows again.</value></data>
+  <data name="ThemeLabel" xml:space="preserve"><value>Theme</value></data>
+  <data name="ThemeSystem" xml:space="preserve"><value>Follow Windows</value></data>
+  <data name="ThemeLight" xml:space="preserve"><value>Light</value></data>
+  <data name="ThemeDark" xml:space="preserve"><value>Dark</value></data>
+  <data name="LanguageLabel" xml:space="preserve"><value>Language</value></data>
+  <data name="LanguageSystem" xml:space="preserve"><value>Follow Windows</value></data>
+  <data name="LanguageRestart" xml:space="preserve"><value>The language changes the next time Controlability starts.</value></data>
+  <data name="LogLevelLabel" xml:space="preserve"><value>Log level</value></data>
+  <data name="LogDebug" xml:space="preserve"><value>Debug (most detail)</value></data>
+  <data name="LogInformation" xml:space="preserve"><value>Information</value></data>
+  <data name="LogWarning" xml:space="preserve"><value>Warnings and errors</value></data>
+  <data name="LogError" xml:space="preserve"><value>Errors only</value></data>
+  <data name="OpenLogs" xml:space="preserve"><value>Open logs folder</value></data>
+  <data name="CopyDiagnostics" xml:space="preserve"><value>Copy diagnostics</value></data>
+  <data name="DiagnosticsCopied" xml:space="preserve"><value>Diagnostics copied to the clipboard.</value></data>
+  <data name="DiagnosticsCopyFailed" xml:space="preserve"><value>Could not copy: another program is using the clipboard. Try again.</value></data>
+  <data name="AboutVersion" xml:space="preserve"><value>Controlability {0}</value></data>
+  <data name="AboutLicenses" xml:space="preserve"><value>Third-party components</value></data>
+  <data name="AboutOpen" xml:space="preserve"><value>Open</value></data>
+  <data name="CrashTitle" xml:space="preserve"><value>Controlability</value></data>
+  <data name="CrashHeading" xml:space="preserve"><value>Something went wrong</value></data>
+  <data name="CrashText" xml:space="preserve"><value>Controlability hit an unexpected error and is closing. Your controllers were given back to Windows and the virtual pads were removed. Copy the diagnostics and include them if you report the problem.</value></data>
+  <data name="CrashCopy" xml:space="preserve"><value>Copy diagnostics</value></data>
+  <data name="CrashClose" xml:space="preserve"><value>Close</value></data>
+  <data name="SteamTipTitle" xml:space="preserve"><value>Steam is running</value></data>
+  <data name="SteamTipText" xml:space="preserve"><value>In Steam, open Settings &gt; Controller and turn off PlayStation Configuration Support (and Generic Gamepad support), or turn it off for this game in its controller options. Otherwise Steam can grab the controller first and the game sees it twice.</value></data>
+  <data name="SteamTipDismiss" xml:space="preserve"><value>Got it</value></data>
+  <data name="WizardWindowTitle" xml:space="preserve"><value>Welcome to Controlability</value></data>
+  <data name="WizardStepOf" xml:space="preserve"><value>Step {0} of {1}</value></data>
+  <data name="WizardWelcomeTitle" xml:space="preserve"><value>Welcome</value></data>
+  <data name="WizardWelcomeText" xml:space="preserve"><value>Controlability turns any game controller into a virtual Xbox 360 controller, and lets a keyboard and controllers share one PC for local co-op.</value></data>
+  <data name="WizardWelcomeSteps" xml:space="preserve"><value>This takes about a minute: check two drivers, plug in a controller, and pick how the keyboard behaves.</value></data>
+  <data name="WizardDriversTitle" xml:space="preserve"><value>Drivers</value></data>
+  <data name="WizardDriversText" xml:space="preserve"><value>Controlability needs ViGEmBus to create the virtual Xbox pads. HidHide is optional: it hides the real controller so games do not see it twice.</value></data>
+  <data name="WizardViGEmWhy" xml:space="preserve"><value>Required for virtual controllers.</value></data>
+  <data name="WizardHidHideWhy" xml:space="preserve"><value>Optional, recommended.</value></data>
+  <data name="WizardDriverInstalled" xml:space="preserve"><value>Installed (version {0})</value></data>
+  <data name="WizardDriverMissing" xml:space="preserve"><value>Not installed</value></data>
+  <data name="WizardInstall" xml:space="preserve"><value>Install</value></data>
+  <data name="WizardInstallViGEm" xml:space="preserve"><value>Install ViGEmBus</value></data>
+  <data name="WizardInstallHidHide" xml:space="preserve"><value>Install HidHide</value></data>
+  <data name="WizardRebootNotice" xml:space="preserve"><value>HidHide needs a restart of Windows after it is installed. Controlability checks again by itself, so this page turns green once the driver is in place.</value></data>
+  <data name="WizardRechecking" xml:space="preserve"><value>Checking again every 2 seconds.</value></data>
+  <data name="WizardControllerTitle" xml:space="preserve"><value>Connect a controller</value></data>
+  <data name="WizardControllerText" xml:space="preserve"><value>Plug in or pair a controller now. It shows up here as soon as Windows sees it. You can skip this and connect one later.</value></data>
+  <data name="WizardControllerWaiting" xml:space="preserve"><value>Waiting for a controller...</value></data>
+  <data name="WizardControllerFound" xml:space="preserve"><value>Found: {0}</value></data>
+  <data name="WizardModeTitle" xml:space="preserve"><value>Choose a mode</value></data>
+  <data name="WizardModeText" xml:space="preserve"><value>How should the keyboard and mouse work next to the controllers?</value></data>
+  <data name="WizardModeLater" xml:space="preserve"><value>You can change this any time on the dashboard or in the settings.</value></data>
+  <data name="WizardDoneTitle" xml:space="preserve"><value>All set</value></data>
+  <data name="WizardDoneText" xml:space="preserve"><value>Controlability runs in the tray. Close the window and it keeps working; right-click the tray icon to pause or exit.</value></data>
+  <data name="WizardBack" xml:space="preserve"><value>Back</value></data>
+  <data name="WizardNext" xml:space="preserve"><value>Next</value></data>
+  <data name="WizardFinish" xml:space="preserve"><value>Finish</value></data>
+  <data name="WizardSkip" xml:space="preserve"><value>Skip setup</value></data>
 </root>

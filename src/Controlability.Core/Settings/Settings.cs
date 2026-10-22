@@ -99,4 +99,7 @@ public sealed record Settings
     public AppLogLevel LogLevel { get; set; } = AppLogLevel.Information;
 
     public WindowPlacement? WindowPlacement { get; set; }
+
+    /// <summary>The user closed the "turn off Steam's PlayStation support" tip; it stays away.</summary>
+    public bool SteamTipDismissed { get; set; }
 }

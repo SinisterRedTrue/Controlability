@@ -11,12 +11,17 @@ public partial class SettingsPage : Page
 {
     private readonly SettingsViewModel _viewModel;
 
-    public SettingsPage(SettingsViewModel viewModel)
+    public SettingsPage(SettingsViewModel viewModel, GeneralSettingsViewModel general)
     {
         _viewModel = viewModel;
         DataContext = viewModel;
         InitializeComponent();
-        Loaded += (_, _) => viewModel.Refresh();
+        GeneralPanel.DataContext = general;
+        Loaded += (_, _) =>
+        {
+            viewModel.Refresh();
+            general.Refresh();
+        };
     }
 
     /// <summary>While a key is being captured, the next key press becomes the binding.</summary>

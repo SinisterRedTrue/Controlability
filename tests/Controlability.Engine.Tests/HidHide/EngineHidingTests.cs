@@ -161,6 +161,9 @@ public sealed class EngineHidingTests : IDisposable
     public void Start_whitelists_the_app()
     {
         Engine.Start();
+
+        // The whitelist runs on the input thread, so wait for its first tick.
+        SpinWait.SpinUntil(() => _hider.WhitelistCalls > 0, TimeSpan.FromSeconds(5));
         Engine.Stop();
 
         _hider.WhitelistCalls.Should().Be(1);

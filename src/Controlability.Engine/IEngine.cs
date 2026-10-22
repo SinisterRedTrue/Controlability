@@ -112,6 +112,24 @@ public interface IEngine : IDisposable
     void SetMode(KeyboardMode mode);
 
     /// <summary>
+    /// Re-reads the shared <see cref="Settings"/> object after the UI changed it and applies what can change at runtime:
+    /// slot policy, grace period, polling rate and HidHide on/off.
+    /// </summary>
+    void ApplySettings();
+
+    /// <summary>
+    /// Gives every hidden controller back to Windows now, even while pads are active. Works when the engine is stopped,
+    /// too (the crash handler uses it).
+    /// </summary>
+    void UnhideAll();
+
+    /// <summary>
+    /// Closes and re-opens the input sources (after the PC woke from sleep). Devices come back as new connections and
+    /// return to their slots through the grace period.
+    /// </summary>
+    void RestartInput();
+
+    /// <summary>
     /// Latest raw and mapped state of a device, for the live test panel. Safe from any thread, takes no lock on the
     /// input thread's path. Returns false if the device is unknown or has not produced a state yet.
     /// </summary>

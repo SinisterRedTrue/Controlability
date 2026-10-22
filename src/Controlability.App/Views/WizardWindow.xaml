@@ -1,0 +1,205 @@
+<ui:FluentWindow x:Class="Controlability.App.Views.WizardWindow"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                 xmlns:res="clr-namespace:Controlability.App.Resources"
+                 xmlns:controls="clr-namespace:Controlability.App.Controls"
+                 Title="{x:Static res:Strings.WizardWindowTitle}"
+                 Width="760" Height="600" MinWidth="640" MinHeight="520"
+                 ExtendsContentIntoTitleBar="True"
+                 WindowBackdropType="Mica"
+                 WindowCornerPreference="Round"
+                 WindowStartupLocation="CenterScreen"
+                 AutomationProperties.Name="{x:Static res:Strings.WizardWindowTitle}">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+        <Style x:Key="Body" TargetType="TextBlock">
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Margin" Value="0,0,0,12" />
+        </Style>
+        <Style x:Key="StatusDot" TargetType="Border">
+            <Setter Property="Width" Value="12" />
+            <Setter Property="Height" Value="12" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Margin" Value="0,0,10,0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Background" Value="#EF4444" />
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar Grid.Row="0" Title="{x:Static res:Strings.WizardWindowTitle}" />
+
+        <Grid Grid.Row="1" Margin="32,8,32,8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Margin="0,0,0,16">
+                <TextBlock Text="{Binding StepNumberText}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                <TextBlock Text="{Binding StepTitle}" FontSize="28" FontWeight="SemiBold" AutomationProperties.LiveSetting="Polite" />
+            </StackPanel>
+
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <Grid>
+                    <!-- 1. Welcome -->
+                    <StackPanel Visibility="{Binding IsWelcome, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Text="{x:Static res:Strings.WizardWelcomeText}" Style="{StaticResource Body}" />
+                        <TextBlock Text="{x:Static res:Strings.WizardWelcomeSteps}" Style="{StaticResource Body}"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+
+                    <!-- 2. Drivers -->
+                    <StackPanel Visibility="{Binding IsDrivers, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Text="{x:Static res:Strings.WizardDriversText}" Style="{StaticResource Body}" />
+
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Border>
+                                <Border.Style>
+                                    <Style TargetType="Border" BasedOn="{StaticResource StatusDot}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding ViGEmInstalled}" Value="True">
+                                                <Setter Property="Background" Value="#22C55E" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                            </Border>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="ViGEmBus" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding ViGEmText}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                           AutomationProperties.Name="{Binding ViGEmText}" />
+                                <TextBlock Text="{x:Static res:Strings.WizardViGEmWhy}" TextWrapping="Wrap" Margin="0,2,0,0"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+                            <Button Grid.Column="2" Content="{x:Static res:Strings.WizardInstall}" Command="{Binding InstallViGEmCommand}"
+                                    VerticalAlignment="Top" AutomationProperties.Name="{x:Static res:Strings.WizardInstallViGEm}">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding ViGEmInstalled}" Value="True">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </Grid>
+
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Border>
+                                <Border.Style>
+                                    <Style TargetType="Border" BasedOn="{StaticResource StatusDot}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HidHideInstalled}" Value="True">
+                                                <Setter Property="Background" Value="#22C55E" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                            </Border>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="HidHide" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding HidHideText}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                           AutomationProperties.Name="{Binding HidHideText}" />
+                                <TextBlock Text="{x:Static res:Strings.WizardHidHideWhy}" TextWrapping="Wrap" Margin="0,2,0,0"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+                            <Button Grid.Column="2" Content="{x:Static res:Strings.WizardInstall}" Command="{Binding InstallHidHideCommand}"
+                                    VerticalAlignment="Top" AutomationProperties.Name="{x:Static res:Strings.WizardInstallHidHide}">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HidHideInstalled}" Value="True">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </Grid>
+
+                        <TextBlock Text="{x:Static res:Strings.WizardRebootNotice}" Style="{StaticResource Body}"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        <TextBlock Text="{x:Static res:Strings.WizardRechecking}" Style="{StaticResource Body}"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+
+                    <!-- 3. Controller -->
+                    <StackPanel Visibility="{Binding IsController, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Text="{x:Static res:Strings.WizardControllerText}" Style="{StaticResource Body}" />
+                        <TextBlock Text="{Binding ControllerText}" FontWeight="SemiBold" Style="{StaticResource Body}"
+                                   AutomationProperties.LiveSetting="Polite" />
+                        <controls:ControllerView Live="{Binding Live}" ShowOutput="False" Title="{x:Static res:Strings.LivePanelRaw}"
+                                                 Height="260" HorizontalAlignment="Left"
+                                                 Visibility="{Binding HasController, Converter={StaticResource BoolToVisibility}}" />
+                    </StackPanel>
+
+                    <!-- 4. Mode -->
+                    <StackPanel Visibility="{Binding IsMode, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Text="{x:Static res:Strings.WizardModeText}" Style="{StaticResource Body}" />
+                        <RadioButton GroupName="WizardMode" IsChecked="{Binding ModeA, Mode=TwoWay}"
+                                     AutomationProperties.Name="{x:Static res:Strings.ModeATitle}">
+                            <StackPanel>
+                                <TextBlock Text="{x:Static res:Strings.ModeATitle}" FontWeight="SemiBold" />
+                                <TextBlock Text="{x:Static res:Strings.ModeATooltip}" TextWrapping="Wrap"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton GroupName="WizardMode" IsChecked="{Binding ModeB, Mode=TwoWay}" Margin="0,8,0,0"
+                                     AutomationProperties.Name="{x:Static res:Strings.ModeBTitle}">
+                            <StackPanel>
+                                <TextBlock Text="{x:Static res:Strings.ModeBTitle}" FontWeight="SemiBold" />
+                                <TextBlock Text="{x:Static res:Strings.ModeBTooltip}" TextWrapping="Wrap"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+                        </RadioButton>
+                        <TextBlock Text="{x:Static res:Strings.WizardModeLater}" Style="{StaticResource Body}" Margin="0,12,0,0"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+
+                    <!-- 5. Done -->
+                    <StackPanel Visibility="{Binding IsDone, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Text="{x:Static res:Strings.WizardDoneText}" Style="{StaticResource Body}" />
+                        <ui:ToggleSwitch IsChecked="{Binding StartWithWindows, Mode=TwoWay}" Content="{x:Static res:Strings.StartWithWindows}"
+                                         AutomationProperties.Name="{x:Static res:Strings.StartWithWindows}" />
+                        <TextBlock Text="{x:Static res:Strings.StartWithWindowsHint}" Style="{StaticResource Body}" Margin="0,4,0,0"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+                </Grid>
+            </ScrollViewer>
+        </Grid>
+
+        <Grid Grid.Row="2" Margin="32,8,32,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Button Content="{x:Static res:Strings.WizardSkip}" Command="{Binding SkipCommand}"
+                    AutomationProperties.Name="{x:Static res:Strings.WizardSkip}" />
+            <Button Grid.Column="2" Content="{x:Static res:Strings.WizardBack}" Command="{Binding BackCommand}"
+                    Visibility="{Binding CanGoBack, Converter={StaticResource BoolToVisibility}}" Margin="0,0,8,0" />
+            <ui:Button Grid.Column="3" Content="{Binding NextText}" Command="{Binding NextCommand}" Appearance="Primary"
+                    IsDefault="True" MinWidth="100" />
+        </Grid>
+    </Grid>
+</ui:FluentWindow>

@@ -30,15 +30,117 @@
         <StackPanel Margin="24,8,24,16">
             <TextBlock Text="{x:Static res:Strings.SettingsTitle}" FontSize="28" FontWeight="SemiBold" Margin="0,0,0,12" />
 
-            <!-- General -->
-            <Border Style="{StaticResource Section}">
-                <StackPanel>
-                    <TextBlock Text="{x:Static res:Strings.SettingsGeneral}" Style="{StaticResource SectionTitle}" />
-                    <TextBlock Text="{x:Static res:Strings.CloseToTrayHint}" Style="{StaticResource Hint}" />
-                    <ui:ToggleSwitch IsChecked="{Binding CloseToTray, Mode=TwoWay}" Content="{x:Static res:Strings.CloseToTray}"
-                                     AutomationProperties.Name="{x:Static res:Strings.CloseToTray}" />
-                </StackPanel>
-            </Border>
+            <StackPanel x:Name="GeneralPanel">
+                <TextBlock Text="{Binding StatusText}" Style="{StaticResource Hint}" FontWeight="SemiBold"
+                           AutomationProperties.LiveSetting="Polite" />
+
+                <!-- General -->
+                <Border Style="{StaticResource Section}">
+                    <StackPanel>
+                        <TextBlock Text="{x:Static res:Strings.SettingsGeneral}" Style="{StaticResource SectionTitle}" />
+                        <TextBlock Text="{x:Static res:Strings.StartWithWindowsHint}" Style="{StaticResource Hint}" />
+                        <ui:ToggleSwitch IsChecked="{Binding StartWithWindows, Mode=TwoWay}" Content="{x:Static res:Strings.StartWithWindows}"
+                                         AutomationProperties.Name="{x:Static res:Strings.StartWithWindows}" />
+                        <ui:ToggleSwitch IsChecked="{Binding StartMinimized, Mode=TwoWay}" Content="{x:Static res:Strings.StartMinimized}"
+                                         AutomationProperties.Name="{x:Static res:Strings.StartMinimized}" />
+                        <TextBlock Text="{x:Static res:Strings.CloseToTrayHint}" Style="{StaticResource Hint}" Margin="0,8,0,8" />
+                        <ui:ToggleSwitch IsChecked="{Binding DataContext.CloseToTray, RelativeSource={RelativeSource AncestorType=Page}, Mode=TwoWay}"
+                                         Content="{x:Static res:Strings.CloseToTray}"
+                                         AutomationProperties.Name="{x:Static res:Strings.CloseToTray}" />
+                        <TextBlock Text="{x:Static res:Strings.ModeSettingLabel}" FontWeight="SemiBold" Margin="0,12,0,4" />
+                        <ComboBox ItemsSource="{Binding ModeChoices}" SelectedItem="{Binding Mode}" DisplayMemberPath="Label"
+                                  HorizontalAlignment="Left" MinWidth="260" AutomationProperties.Name="{x:Static res:Strings.ModeSettingLabel}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Input -->
+                <Border Style="{StaticResource Section}">
+                    <StackPanel>
+                        <TextBlock Text="{x:Static res:Strings.SettingsInput}" Style="{StaticResource SectionTitle}" />
+                        <TextBlock Text="{x:Static res:Strings.SlotPolicyLabel}" FontWeight="SemiBold" Margin="0,8,0,4" />
+                        <TextBlock Text="{x:Static res:Strings.SlotPolicyHint}" Style="{StaticResource Hint}" />
+                        <ComboBox ItemsSource="{Binding SlotPolicyChoices}" SelectedItem="{Binding SlotPolicyChoice}" DisplayMemberPath="Label"
+                                  HorizontalAlignment="Left" MinWidth="260" AutomationProperties.Name="{x:Static res:Strings.SlotPolicyLabel}" />
+                        <TextBlock Text="{x:Static res:Strings.PollingRateLabel}" FontWeight="SemiBold" Margin="0,12,0,4" />
+                        <TextBlock Text="{x:Static res:Strings.PollingRateHint}" Style="{StaticResource Hint}" />
+                        <ComboBox ItemsSource="{Binding PollingRateChoices}" SelectedItem="{Binding PollingRate}" DisplayMemberPath="Label"
+                                  HorizontalAlignment="Left" MinWidth="160" AutomationProperties.Name="{x:Static res:Strings.PollingRateLabel}" />
+                        <TextBlock Text="{x:Static res:Strings.GraceLabel}" FontWeight="SemiBold" Margin="0,12,0,4" />
+                        <TextBlock Text="{x:Static res:Strings.GraceHint}" Style="{StaticResource Hint}" />
+                        <ComboBox ItemsSource="{Binding GracePeriodChoices}" SelectedItem="{Binding GracePeriod}" DisplayMemberPath="Label"
+                                  HorizontalAlignment="Left" MinWidth="160" AutomationProperties.Name="{x:Static res:Strings.GraceLabel}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Hiding -->
+                <Border Style="{StaticResource Section}">
+                    <StackPanel>
+                        <TextBlock Text="{x:Static res:Strings.SettingsHiding}" Style="{StaticResource SectionTitle}" />
+                        <TextBlock Text="{x:Static res:Strings.HidHideHint}" Style="{StaticResource Hint}" />
+                        <ui:ToggleSwitch IsChecked="{Binding HidHideEnabled, Mode=TwoWay}" Content="{x:Static res:Strings.HidHideEnabled}"
+                                         AutomationProperties.Name="{x:Static res:Strings.HidHideEnabled}" />
+                        <ui:ToggleSwitch IsChecked="{Binding UnhideWhilePaused, Mode=TwoWay}" Content="{x:Static res:Strings.UnhideWhilePaused}"
+                                         AutomationProperties.Name="{x:Static res:Strings.UnhideWhilePaused}" />
+                        <TextBlock Text="{x:Static res:Strings.UnhideAllHint}" Style="{StaticResource Hint}" Margin="0,8,0,8" />
+                        <Button Content="{x:Static res:Strings.UnhideAllButton}" Command="{Binding UnhideAllCommand}" HorizontalAlignment="Left" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Appearance -->
+                <Border Style="{StaticResource Section}">
+                    <StackPanel>
+                        <TextBlock Text="{x:Static res:Strings.SettingsAppearance}" Style="{StaticResource SectionTitle}" />
+                        <TextBlock Text="{x:Static res:Strings.ThemeLabel}" FontWeight="SemiBold" Margin="0,8,0,4" />
+                        <ComboBox ItemsSource="{Binding ThemeChoices}" SelectedItem="{Binding Theme}" DisplayMemberPath="Label"
+                                  HorizontalAlignment="Left" MinWidth="160" AutomationProperties.Name="{x:Static res:Strings.ThemeLabel}" />
+                        <TextBlock Text="{x:Static res:Strings.LanguageLabel}" FontWeight="SemiBold" Margin="0,12,0,4" />
+                        <ComboBox ItemsSource="{Binding LanguageChoices}" SelectedItem="{Binding Language}" DisplayMemberPath="Label"
+                                  HorizontalAlignment="Left" MinWidth="160" AutomationProperties.Name="{x:Static res:Strings.LanguageLabel}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Advanced -->
+                <Border Style="{StaticResource Section}">
+                    <StackPanel>
+                        <TextBlock Text="{x:Static res:Strings.SettingsAdvanced}" Style="{StaticResource SectionTitle}" />
+                        <TextBlock Text="{x:Static res:Strings.LogLevelLabel}" FontWeight="SemiBold" Margin="0,8,0,4" />
+                        <ComboBox ItemsSource="{Binding LogLevelChoices}" SelectedItem="{Binding LogLevel}" DisplayMemberPath="Label"
+                                  HorizontalAlignment="Left" MinWidth="160" AutomationProperties.Name="{x:Static res:Strings.LogLevelLabel}" />
+                        <TextBlock Text="{Binding LogsFolder}" Style="{StaticResource Hint}" Margin="0,8,0,8" />
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="{x:Static res:Strings.OpenLogs}" Command="{Binding OpenLogsCommand}" />
+                            <Button Content="{x:Static res:Strings.CopyDiagnostics}" Command="{Binding CopyDiagnosticsCommand}" Margin="8,0,0,0" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- About -->
+                <Border Style="{StaticResource Section}">
+                    <StackPanel>
+                        <TextBlock Text="{x:Static res:Strings.SettingsAbout}" Style="{StaticResource SectionTitle}" />
+                        <TextBlock Text="{Binding VersionText}" Margin="0,8,0,4" />
+                        <TextBlock Text="{x:Static res:Strings.AboutLicenses}" FontWeight="SemiBold" Margin="0,8,0,4" />
+                        <ItemsControl ItemsSource="{Binding Notices}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="120" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                        <TextBlock Grid.Column="1" Text="{Binding License}" VerticalAlignment="Center" />
+                                        <Button Grid.Column="2" Content="{x:Static res:Strings.AboutOpen}"
+                                                Command="{Binding DataContext.OpenLinkCommand, ElementName=GeneralPanel}"
+                                                CommandParameter="{Binding Url}" AutomationProperties.Name="{Binding Name}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
 
             <!-- Game for Mode B -->
             <Border Style="{StaticResource Section}">

@@ -68,6 +68,7 @@ public static class EngineServiceCollectionExtensions
         services.TryAddSingleton<IKeyboardSource>(provider => new RawInputKeyboardSource(provider.GetRequiredService<IClock>()));
         services.TryAddSingleton<IMouseInjector, SendInputMouse>();
         services.TryAddSingleton<IGameProcessWatcher>(_ => new GameProcessWatcher());
+        services.TryAddSingleton<IDriverProbe, DriverProbe>();
         services.TryAddSingleton<IEngine>(provider =>
         {
             var settings = provider.GetRequiredService<Settings>();

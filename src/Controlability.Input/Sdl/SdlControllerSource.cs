@@ -17,7 +17,7 @@ namespace Controlability.Input.Sdl;
 /// raised on the polling thread. <see cref="Dispose"/> also calls SDL, so call it on the polling thread (or after it stopped).
 /// </para>
 /// </summary>
-public sealed unsafe class SdlControllerSource : IInputSource, ISensorControl
+public sealed unsafe class SdlControllerSource : IInputSource, ISensorControl, ISourceRestart
 {
     private static readonly TimeSpan BatteryRefresh = TimeSpan.FromSeconds(5);
 
@@ -27,6 +27,7 @@ public sealed unsafe class SdlControllerSource : IInputSource, ISensorControl
     private readonly Dictionary<uint, Device> _byInstance = [];
     private readonly Dictionary<DeviceId, Device> _byId = [];
     private readonly ConcurrentQueue<Command> _commands = new();
+    private volatile bool _restartRequested;
     private bool _started;
     private bool _disposed;
 
@@ -63,6 +64,12 @@ public sealed unsafe class SdlControllerSource : IInputSource, ISensorControl
             SdlRuntime.Acquire();
             _started = true;
             OpenAlreadyConnected();
+        }
+
+        if (_restartRequested)
+        {
+            _restartRequested = false;
+            Reopen();
         }
 
         DrainCommands();
@@ -105,6 +112,8 @@ public sealed unsafe class SdlControllerSource : IInputSource, ISensorControl
     public void SetGyroEnabled(DeviceId id, bool enabled)
         => _commands.Enqueue(new Command(CommandKind.Gyro, id, enabled ? (byte)1 : (byte)0, 0, 0));
 
+    public void Restart() => _restartRequested = true;
+
     public void Dispose()
     {
         if (_disposed)
@@ -128,6 +137,22 @@ public sealed unsafe class SdlControllerSource : IInputSource, ISensorControl
         {
             SdlRuntime.Release();
         }
+    }
+
+    /// <summary>
+    /// Closes every device (raising <see cref="DeviceRemoved"/>), shuts SDL down and starts it again, so handles that
+    /// went stale during sleep are replaced. The devices come back as new <see cref="DeviceAdded"/> events.
+    /// </summary>
+    private void Reopen()
+    {
+        foreach (var device in SnapshotDevices())
+        {
+            Close((SDL_JoystickID)device.InstanceId);
+        }
+
+        SdlRuntime.Release();
+        SdlRuntime.Acquire();
+        OpenAlreadyConnected();
     }
 
     private void OpenAlreadyConnected()

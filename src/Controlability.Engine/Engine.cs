@@ -171,14 +171,16 @@ public sealed class Engine : IEngine
                 return;
             }
 
-            var rate = _settings.PollingRateHz is 1000 or 500 or 250 ? _settings.PollingRateHz : 1000;
-            if (_settings.HidHideEnabled && _hider is { IsAvailable: true })
+            // On the input thread: the HidHide CLI can take seconds, and Start runs on the UI thread.
+            _commands.Enqueue(() =>
             {
-                _hider.WhitelistSelf();
-            }
-
+                if (HidingWanted)
+                {
+                    _hider!.WhitelistSelf();
+                }
+            });
             _commands.Enqueue(ApplyMode);
-            _loop = new InputLoop(Tick, rate, Shutdown);
+            _loop = new InputLoop(Tick, PollingRate, Shutdown);
             _loop.Start();
             _gameWatcher?.Start();
         }
@@ -299,6 +301,46 @@ public sealed class Engine : IEngine
             }
         });
     }
+
+    public void ApplySettings() => _commands.Enqueue(() =>
+    {
+        _slots.Policy = _settings.SlotPolicy;
+        _slots.GracePeriod = TimeSpan.FromSeconds(_settings.GracePeriodSeconds);
+        if (_loop is { } loop)
+        {
+            loop.Rate = PollingRate;
+        }
+
+        if (HidingWanted)
+        {
+            _hider!.WhitelistSelf();
+            SyncHiding();
+        }
+        else if (_hidden.Count > 0)
+        {
+            UnhideEverything();
+        }
+    });
+
+    public void UnhideAll()
+    {
+        if (IsRunning)
+        {
+            _commands.Enqueue(UnhideEverything);
+        }
+        else
+        {
+            UnhideEverything();
+        }
+    }
+
+    public void RestartInput() => _commands.Enqueue(() =>
+    {
+        foreach (var source in _sources)
+        {
+            (source as ISourceRestart)?.Restart();
+        }
+    });
 
     public void SetDeviceHidden(DeviceId device, bool hidden) => _commands.Enqueue(() =>
     {
@@ -687,6 +729,8 @@ public sealed class Engine : IEngine
         _hiddenSnapshot = [.. _hidden];
         MarkDirty();
     }
+
+    private int PollingRate => _settings.PollingRateHz is 1000 or 500 or 250 ? _settings.PollingRateHz : 1000;
 
     private bool HidingWanted => _settings.HidHideEnabled && _hider is { IsAvailable: true };
 
