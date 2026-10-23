@@ -11,18 +11,26 @@
 
 .PARAMETER SkipTests
     Skips "dotnet test". For quick local packaging only; a release build should run the tests.
+
+.PARAMETER ArtifactsDirectory
+    Output directory inside this repository. Only this directory is cleaned; defaults to artifacts.
 #>
 [CmdletBinding()]
 param(
     [string]$IsccPath,
-    [switch]$SkipTests
+    [switch]$SkipTests,
+    [string]$ArtifactsDirectory
 )
 
 $ErrorActionPreference = 'Stop'
 
 # The repo path contains "[ ]" and spaces: every path below is quoted or passed with -LiteralPath.
 $root = $PSScriptRoot
-$artifacts = Join-Path $root 'artifacts'
+$artifacts = if ($ArtifactsDirectory) { [System.IO.Path]::GetFullPath($ArtifactsDirectory, $root) } else { Join-Path $root 'artifacts' }
+# Validate the absolute cleanup target before any recursive removal.
+if (-not $artifacts.StartsWith($root.TrimEnd('\', '/') + [System.IO.Path]::DirectorySeparatorChar, [System.StringComparison]::OrdinalIgnoreCase)) {
+    throw 'ArtifactsDirectory must be a directory inside this repository.'
+}
 $publishDir = Join-Path $artifacts 'publish'
 $solution = Join-Path $root 'Controlability.sln'
 $appProject = Join-Path $root 'src\Controlability.App'
