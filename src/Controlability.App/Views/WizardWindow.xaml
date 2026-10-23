@@ -5,6 +5,7 @@
                  xmlns:res="clr-namespace:Controlability.App.Resources"
                  xmlns:controls="clr-namespace:Controlability.App.Controls"
                  Title="{x:Static res:Strings.WizardWindowTitle}"
+                 Background="{DynamicResource AppBackgroundBrush}" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Icon="{StaticResource ControlabilityMark}"
                  Width="760" Height="600" MinWidth="640" MinHeight="520"
                  ExtendsContentIntoTitleBar="True"
                  WindowBackdropType="Mica"
@@ -13,7 +14,7 @@
                  AutomationProperties.Name="{x:Static res:Strings.WizardWindowTitle}">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
-        <Style x:Key="Body" TargetType="TextBlock">
+        <Style x:Key="Body" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
             <Setter Property="TextWrapping" Value="Wrap" />
             <Setter Property="Margin" Value="0,0,0,12" />
         </Style>

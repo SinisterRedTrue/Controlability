@@ -21,6 +21,10 @@ public sealed partial class SteamTipViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private bool _isVisible;
 
+    /// <summary>"Review setup" shows the full instructions under the summary.</summary>
+    [ObservableProperty]
+    private bool _isExpanded;
+
     public SteamTipViewModel(IRunningApps apps, Settings settings, Action<Settings> save, IUiThread ui)
     {
         _apps = apps;
@@ -34,6 +38,9 @@ public sealed partial class SteamTipViewModel : ObservableObject, IDisposable
         => IsVisible = !_settings.SteamTipDismissed && _apps.IsRunning("steam");
 
     public void Dispose() => _timer.Dispose();
+
+    [RelayCommand]
+    private void ToggleDetails() => IsExpanded = !IsExpanded;
 
     [RelayCommand]
     private void Dismiss()

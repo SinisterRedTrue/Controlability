@@ -36,7 +36,7 @@
   <data name="SlotActiveStatus" xml:space="preserve"><value>Active</value></data>
   <data name="SlotWaitingStatus" xml:space="preserve"><value>Waiting for reconnect</value></data>
   <data name="SlotPausedStatus" xml:space="preserve"><value>Paused</value></data>
-  <data name="SlotEmptyHint" xml:space="preserve"><value>Drag a controller here</value></data>
+  <data name="SlotEmptyHint" xml:space="preserve"><value>Choose Assign device or drag a controller here</value></data>
   <data name="ProfileLabel" xml:space="preserve"><value>Profile: {0}</value></data>
   <data name="ProfileNone" xml:space="preserve"><value>none</value></data>
   <data name="XInputLabel" xml:space="preserve"><value>XInput {0}</value></data>
@@ -55,7 +55,7 @@
   <data name="TypeXbox" xml:space="preserve"><value>Xbox</value></data>
   <data name="TypeKeyboard" xml:space="preserve"><value>Keyboard</value></data>
   <data name="DetectedDevices" xml:space="preserve"><value>Detected devices</value></data>
-  <data name="DetectedDevicesHint" xml:space="preserve"><value>Drag a device onto a player card, or right-click it.</value></data>
+  <data name="DetectedDevicesHint" xml:space="preserve"><value>Choose Assign device, or drag a device onto a player card.</value></data>
   <data name="DevicesEmptyTitle" xml:space="preserve"><value>No controllers detected</value></data>
   <data name="DevicesEmptyHint" xml:space="preserve"><value>Plug in a controller or pair one over Bluetooth. It shows up here on its own.</value></data>
   <data name="DeviceAssigned" xml:space="preserve"><value>On Player {0}</value></data>
@@ -199,7 +199,7 @@
   <data name="TabButtons" xml:space="preserve"><value>Buttons</value></data>
   <data name="TabSticks" xml:space="preserve"><value>Sticks</value></data>
   <data name="TabTriggers" xml:space="preserve"><value>Triggers</value></data>
-  <data name="TabKeyboard" xml:space="preserve"><value>Keyboard</value></data>
+  <data name="TabKeyboard" xml:space="preserve"><value>Keyboard &amp; mouse</value></data>
   <data name="TabAppliesTo" xml:space="preserve"><value>Applies to</value></data>
   <data name="ButtonsHint" xml:space="preserve"><value>Click Bind, then press the button on the controller that should send it. Esc cancels after 5 seconds without a press.</value></data>
   <data name="ButtonBind" xml:space="preserve"><value>Bind</value></data>

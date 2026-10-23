@@ -1,6 +1,10 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 using System.Windows.Media;
+using Controlability.App.Resources;
+using Controlability.App.ViewModels;
 
 namespace Controlability.App.Controls;
 
@@ -13,6 +17,60 @@ public partial class PlayerCard : UserControl
     public PlayerCard()
     {
         InitializeComponent();
+    }
+
+    /// <summary>Opens a pop-up menu under <paramref name="anchor"/>; the items keep the app's menu look.</summary>
+    internal static void OpenMenu(FrameworkElement anchor, IEnumerable<object> items)
+    {
+        var style = new Style(typeof(MenuItem), (Style?)anchor.TryFindResource(typeof(MenuItem)));
+        style.Setters.Add(new Setter(MenuItem.HeaderProperty, new Binding("Header")));
+        style.Setters.Add(new Setter(MenuItem.CommandProperty, new Binding("Command")));
+        style.Setters.Add(new Setter(MenuItem.IsCheckedProperty, new Binding("IsChecked") { Mode = BindingMode.OneWay }));
+        new ContextMenu
+        {
+            PlacementTarget = anchor,
+            Placement = PlacementMode.Bottom,
+            MinWidth = anchor.ActualWidth,
+            ItemsSource = items.ToList(),
+            ItemContainerStyle = style,
+            IsOpen = true,
+        };
+    }
+
+    private void OnAssignClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement anchor && DataContext is PlayerCardViewModel card)
+        {
+            OpenMenu(anchor, card.AssignOptions);
+        }
+    }
+
+    private void OnProfileClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement anchor && DataContext is PlayerCardViewModel card)
+        {
+            OpenMenu(anchor, card.ProfileOptions);
+        }
+    }
+
+    private void OnMoreClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement anchor || DataContext is not PlayerCardViewModel card)
+        {
+            return;
+        }
+
+        new ContextMenu
+        {
+            PlacementTarget = anchor,
+            Placement = PlacementMode.Bottom,
+            Items =
+            {
+                new MenuItem { Header = Strings.MenuIdentify, Command = card.IdentifyCommand },
+                new MenuItem { Header = Strings.MenuUnassign, Command = card.UnassignCommand },
+            },
+            IsOpen = true,
+        };
     }
 
     protected override void OnDragEnter(DragEventArgs e)

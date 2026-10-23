@@ -11,6 +11,10 @@ namespace Controlability.App.ViewModels;
 
 public sealed record ProfileListItem(string Id, string Name, bool IsShipped)
 {
+    public string Icon => Id.Contains("keyboard", StringComparison.OrdinalIgnoreCase) ? "Keyboard" :
+        Id.Contains("nintendo", StringComparison.OrdinalIgnoreCase) || Id.Contains("switch", StringComparison.OrdinalIgnoreCase) ? "Nintendo" :
+        Id.Contains("playstation", StringComparison.OrdinalIgnoreCase) || Id.Contains("ps4", StringComparison.OrdinalIgnoreCase) ? "PlayStation" : "Generic";
+    public string Description => Icon switch { "Keyboard" => "Maps keyboard & mouse", "Nintendo" => "For Nintendo controllers", "PlayStation" => "For DualShock/DualSense", _ => "Universal compatibility" };
     public override string ToString() => Name;
 }
 

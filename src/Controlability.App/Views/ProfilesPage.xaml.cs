@@ -20,7 +20,27 @@ public partial class ProfilesPage : Page
         Unloaded += (_, _) => viewModel.Editor?.CancelBind();
     }
 
+    protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+    {
+        base.OnRenderSizeChanged(sizeInfo);
+        if (FindName("LibraryColumn") is ColumnDefinition column)
+            column.Width = new GridLength(Math.Clamp(sizeInfo.NewSize.Width * 0.218, 184, 295));
+        if (FindName("LibraryTools") is System.Windows.Controls.Primitives.UniformGrid tools)
+            foreach (Button button in tools.Children)
+            {
+                button.Padding = new Thickness(sizeInfo.NewSize.Width < 900 ? 4 : 10, 4, sizeInfo.NewSize.Width < 900 ? 4 : 10, 4);
+                if (button.Content is StackPanel panel && panel.Children[0] is Controls.ProfileGlyph glyph)
+                    glyph.Visibility = sizeInfo.NewSize.Width < 900 ? Visibility.Collapsed : Visibility.Visible;
+            }
+    }
+
     /// <summary>Esc stops waiting for a controller button; while a key is being captured the next key becomes the binding.</summary>
+    private void OnMappingMouseEnter(object sender, MouseEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: ButtonBindingRow row } && _viewModel.Editor is { } editor)
+            editor.HighlightedControl = row.Control.ToString();
+    }
+
     private void OnPreviewKeyDown(object sender, KeyEventArgs e)
     {
         if (_viewModel.Editor is not { } editor)
@@ -42,6 +62,13 @@ public partial class ProfilesPage : Page
 
         if (!editor.IsCapturing)
         {
+            return;
+        }
+
+        if (key == Key.Escape)
+        {
+            editor.CancelKeyCapture();
+            e.Handled = true;
             return;
         }
 

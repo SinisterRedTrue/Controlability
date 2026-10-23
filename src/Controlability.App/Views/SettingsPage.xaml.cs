@@ -25,6 +25,30 @@ public partial class SettingsPage : Page
     }
 
     /// <summary>While a key is being captured, the next key press becomes the binding.</summary>
+    private void OnSectionClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: string name } && FindName(name) is FrameworkElement section)
+        {
+            if (SettingsScroll.Content is System.Windows.Media.Visual content)
+            {
+                var position = section.TransformToAncestor(content).Transform(new Point());
+                SettingsScroll.ScrollToVerticalOffset(position.Y);
+            }
+            FirstFocusable(section)?.Focus();
+        }
+    }
+
+    private static Control? FirstFocusable(DependencyObject parent)
+    {
+        for (var i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
+        {
+            var child = System.Windows.Media.VisualTreeHelper.GetChild(parent, i);
+            if (child is Control { Focusable: true, IsEnabled: true, IsVisible: true } control) return control;
+            if (FirstFocusable(child) is { } nested) return nested;
+        }
+        return null;
+    }
+
     private void OnPreviewKeyDown(object sender, KeyEventArgs e)
     {
         if (!_viewModel.IsCapturing)

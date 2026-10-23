@@ -10,23 +10,55 @@ namespace Controlability.App;
 
 public partial class MainWindow : FluentWindow
 {
+    private readonly DiPageProvider _pages;
     private readonly Settings _settings;
     private readonly Action<Settings> _save;
     private readonly ShellController _shell;
 
     public MainWindow(Settings settings, Action<Settings> save, ShellController shell, DiPageProvider pages)
     {
+        _pages = pages;
         _settings = settings;
         _save = save;
         _shell = shell;
         InitializeComponent();
         RestorePlacement();
+        EngineStatus.DataContext = (_pages.GetPage(typeof(DashboardPage)) as DashboardPage)?.DataContext;
 
-        RootNavigation.SetPageProviderService(pages);
-        Loaded += (_, _) => RootNavigation.Navigate(typeof(DashboardPage));
+        ContentFrame.Navigated += (_, _) =>
+        {
+            while (ContentFrame.CanGoBack) ContentFrame.RemoveBackEntry();
+        };
+        Loaded += (_, _) => Navigate(typeof(DashboardPage));
         if (settings.Theme == AppTheme.System)
         {
             SystemThemeWatcher.Watch(this);
+        }
+    }
+
+    private void OnWindowSizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        if (SidebarColumn is null) return;
+        var compact = ActualWidth < 1100;
+        BrandMark.Width = BrandMark.Height = compact ? 28 : 76;
+        BrandMark.Margin = compact ? new Thickness(0, 0, 0, 8) : new Thickness(12, 0, 0, 8);
+        SidebarColumn.Width = new GridLength(compact ? 64 : 232);
+        foreach (var label in new[] { BrandName, EngineLabel, DashboardLabel, DevicesLabel, ProfilesLabel, SettingsLabel })
+            label.Visibility = compact ? Visibility.Collapsed : Visibility.Visible;
+    }
+
+    private void OnNavigationChecked(object sender, RoutedEventArgs e)
+    {
+        if (ContentFrame is not null && sender is System.Windows.Controls.RadioButton { Tag: Type pageType })
+            Navigate(pageType);
+    }
+
+    private void Navigate(Type pageType)
+    {
+        if (ContentFrame.Content?.GetType() == pageType) return;
+        if (_pages.GetPage(pageType) is { } page)
+        {
+            ContentFrame.Navigate(page);
         }
     }
 

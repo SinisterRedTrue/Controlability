@@ -37,6 +37,7 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
     private bool _disposed;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PauseButtonText))]
     private bool _isPaused;
 
     [ObservableProperty]
@@ -81,6 +82,12 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
 
     public bool IsModeB => Mode == KeyboardMode.KeyboardAsController;
 
+    public string PauseButtonText => IsPaused ? "Resume emulation" : Strings.PauseEmulation;
+
+    public string ViGEmStateText => ViGEmAvailable ? "Ready" : "Missing";
+
+    public string HidHideStateText => HidHideAvailable ? "Ready" : "Missing";
+
     public bool IsStyleXbox => KeyboardStyle == KeyboardInputStyle.XboxController;
 
     public bool IsStyleKeyboard => KeyboardStyle == KeyboardInputStyle.NormalKeyboard;
@@ -123,6 +130,12 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
 
     /// <summary>Drag and drop target: gives <paramref name="device"/> to the slot.</summary>
     public void AssignDevice(DeviceId device, int slot) => _engine.Assign(device, slot);
+
+    [RelayCommand]
+    private void RefreshDeviceList() => Refresh();
+
+    [RelayCommand]
+    private void TogglePause() => IsPaused = !IsPaused;
 
     [RelayCommand]
     private void SetMode(KeyboardMode mode) => _engine.SetMode(mode);
@@ -178,6 +191,7 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
                 }
 
                 Cards[i].Update(slot, info, battery, _profileChoices);
+                Cards[i].SetAssignableDevices(devices);
             }
 
             RefreshDevices(devices, slots);
@@ -194,6 +208,8 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
             HidHideAvailable = drivers.HidHideAvailable;
             OnPropertyChanged(nameof(ShowViGEmBanner));
             OnPropertyChanged(nameof(ShowHidHideBanner));
+            OnPropertyChanged(nameof(ViGEmStateText));
+            OnPropertyChanged(nameof(HidHideStateText));
             OnPropertyChanged(nameof(ViGEmChipText));
             OnPropertyChanged(nameof(HidHideChipText));
             OnPropertyChanged(nameof(ViGEmChipAutomationName));
@@ -226,7 +242,13 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
                 Devices.Add(existing);
             }
 
-            existing.Update(info, slot);
+            BatteryInfo? battery = null;
+            if (_engine.TryGetLiveState(info.Id, out var raw, out _))
+            {
+                battery = raw.Battery;
+            }
+
+            existing.Update(info, slot, battery);
         }
 
         if (before != Devices.Count || before == 0)

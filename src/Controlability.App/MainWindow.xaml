@@ -1,50 +1,61 @@
-<ui:FluentWindow x:Class="Controlability.App.MainWindow"
-                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                 xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-                 xmlns:res="clr-namespace:Controlability.App.Resources"
-                 xmlns:views="clr-namespace:Controlability.App.Views"
-                 Title="{x:Static res:Strings.AppName}"
-                 Width="1100" Height="720" MinWidth="900" MinHeight="600"
-                 ExtendsContentIntoTitleBar="True"
-                 WindowBackdropType="Mica"
-                 WindowCornerPreference="Round"
-                 WindowStartupLocation="CenterScreen">
-    <Grid>
+<ui:FluentWindow xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml" xmlns:res="clr-namespace:Controlability.App.Resources" xmlns:views="clr-namespace:Controlability.App.Views" x:Class="Controlability.App.MainWindow" Title="{x:Static res:Strings.AppName}" Width="1500" Height="940" MinWidth="760" MinHeight="540" Background="{DynamicResource AppBackgroundBrush}" Foreground="{DynamicResource TextFillColorPrimaryBrush}" UseLayoutRounding="True" Icon="{StaticResource ControlabilityMark}" SizeChanged="OnWindowSizeChanged" ExtendsContentIntoTitleBar="True" WindowBackdropType="None" WindowCornerPreference="Round" WindowStartupLocation="CenterScreen">
+    <Grid Background="{DynamicResource AppBackgroundBrush}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-
-        <ui:TitleBar Grid.Row="0" Title="{x:Static res:Strings.AppName}" />
-
-        <ui:NavigationView Grid.Row="1" x:Name="RootNavigation" PaneDisplayMode="Left" OpenPaneLength="200"
-                           IsBackButtonVisible="Collapsed" IsPaneToggleVisible="False"
-                           AutomationProperties.Name="{x:Static res:Strings.AppName}">
-            <ui:NavigationView.MenuItems>
-                <ui:NavigationViewItem Content="{x:Static res:Strings.NavDashboard}" TargetPageType="{x:Type views:DashboardPage}">
-                    <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Home24" />
-                    </ui:NavigationViewItem.Icon>
-                </ui:NavigationViewItem>
-                <ui:NavigationViewItem Content="{x:Static res:Strings.NavDevices}" TargetPageType="{x:Type views:DevicesPage}">
-                    <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Games24" />
-                    </ui:NavigationViewItem.Icon>
-                </ui:NavigationViewItem>
-                <ui:NavigationViewItem Content="{x:Static res:Strings.NavProfiles}" TargetPageType="{x:Type views:ProfilesPage}">
-                    <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Document24" />
-                    </ui:NavigationViewItem.Icon>
-                </ui:NavigationViewItem>
-            </ui:NavigationView.MenuItems>
-            <ui:NavigationView.FooterMenuItems>
-                <ui:NavigationViewItem Content="{x:Static res:Strings.NavSettings}" TargetPageType="{x:Type views:SettingsPage}">
-                    <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Settings24" />
-                    </ui:NavigationViewItem.Icon>
-                </ui:NavigationViewItem>
-            </ui:NavigationView.FooterMenuItems>
-        </ui:NavigationView>
+        <ui:TitleBar Grid.Row="0" Title="{x:Static res:Strings.AppName}" Background="{DynamicResource AppBackgroundBrush}">
+            <ui:TitleBar.Icon>
+                <ui:ImageIcon Source="{StaticResource ControlabilityMark}"/>
+            </ui:TitleBar.Icon>
+        </ui:TitleBar>
+        <Border Grid.Row="0" Height="1" VerticalAlignment="Bottom" IsHitTestVisible="False" Background="{DynamicResource ControlStrokeColorDefaultBrush}"/>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="SidebarColumn" Width="232"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Border Background="{DynamicResource SidebarBrush}" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="0,0,1,0">
+                <DockPanel Margin="8,0">
+                    <StackPanel DockPanel.Dock="Top" Margin="8,24,8,40">
+                        <Image Source="{StaticResource ControlabilityMark}" x:Name="BrandMark" Width="76" Height="76" HorizontalAlignment="Left" Margin="12,0,0,8" AutomationProperties.Name="Controlability"/>
+                        <TextBlock x:Name="BrandName" Text="Controlability" FontSize="25" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0"/>
+                    </StackPanel>
+                    <Border DockPanel.Dock="Bottom" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" Padding="12,20" Margin="0,0,0,4">
+                        <StackPanel x:Name="EngineStatus" Orientation="Horizontal">
+                            <Ellipse Width="10" Height="10" Margin="0,0,10,0"><Ellipse.Style><Style TargetType="Ellipse"><Setter Property="Fill" Value="#54E77C"/><Style.Triggers><DataTrigger Binding="{Binding IsPaused}" Value="True"><Setter Property="Fill" Value="#F3BE54"/></DataTrigger></Style.Triggers></Style></Ellipse.Style></Ellipse>
+                            <TextBlock x:Name="EngineLabel"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Text" Value="Engine running"/><Style.Triggers><DataTrigger Binding="{Binding IsPaused}" Value="True"><Setter Property="Text" Value="Emulation paused"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
+                        </StackPanel>
+                    </Border>
+                    <StackPanel>
+                        <RadioButton GroupName="Navigation" Style="{StaticResource NavigationButton}" Tag="{x:Type views:DashboardPage}" Checked="OnNavigationChecked" IsChecked="True" AutomationProperties.Name="{x:Static res:Strings.NavDashboard}" ToolTip="{x:Static res:Strings.NavDashboard}">
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="Home24" FontSize="20"/>
+                                <TextBlock x:Name="DashboardLabel" Text="{x:Static res:Strings.NavDashboard}" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton GroupName="Navigation" Style="{StaticResource NavigationButton}" Tag="{x:Type views:DevicesPage}" Checked="OnNavigationChecked" AutomationProperties.Name="{x:Static res:Strings.NavDevices}" ToolTip="{x:Static res:Strings.NavDevices}">
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="Games24" FontSize="20"/>
+                                <TextBlock x:Name="DevicesLabel" Text="{x:Static res:Strings.NavDevices}" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton GroupName="Navigation" Style="{StaticResource NavigationButton}" Tag="{x:Type views:ProfilesPage}" Checked="OnNavigationChecked" AutomationProperties.Name="{x:Static res:Strings.NavProfiles}" ToolTip="{x:Static res:Strings.NavProfiles}">
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="Document24" FontSize="20"/>
+                                <TextBlock x:Name="ProfilesLabel" Text="{x:Static res:Strings.NavProfiles}" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </RadioButton>
+                    <RadioButton GroupName="Navigation" Style="{StaticResource NavigationButton}" Tag="{x:Type views:SettingsPage}" Checked="OnNavigationChecked" AutomationProperties.Name="{x:Static res:Strings.NavSettings}" ToolTip="{x:Static res:Strings.NavSettings}">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Settings24" FontSize="20"/>
+                            <TextBlock x:Name="SettingsLabel" Text="{x:Static res:Strings.NavSettings}" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+            <Frame x:Name="ContentFrame" Grid.Column="1" NavigationUIVisibility="Hidden" JournalOwnership="OwnsJournal" Background="{DynamicResource AppBackgroundBrush}"/>
+        </Grid>
     </Grid>
 </ui:FluentWindow>

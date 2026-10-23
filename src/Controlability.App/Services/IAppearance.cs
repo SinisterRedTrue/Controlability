@@ -20,6 +20,7 @@ public sealed class WpfAppearance(IServiceProvider services) : IAppearance
             AppTheme.Dark => ApplicationTheme.Dark,
             _ => ApplicationThemeManager.GetSystemTheme() == SystemTheme.Light ? ApplicationTheme.Light : ApplicationTheme.Dark,
         };
+        DesignTheme.Initialize();
         ApplicationThemeManager.Apply(target);
     }
 

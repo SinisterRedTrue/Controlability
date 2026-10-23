@@ -407,4 +407,22 @@ public sealed class ProfileEditorTests
         _store.Profiles["mine"].Keyboard.MouseSensitivity.Should().Be(2.5f);
         _store.Profiles["mine"].Keyboard.DecayMs.Should().Be(120);
     }
+
+    [Fact]
+    public void FamilySelection_PreservesPartialTargetsUntilEdited_AndRevertsBothModels()
+    {
+        var profile = new Profile { Id = "mine", Name = "Mine" };
+        profile.AppliesTo.ControllerTypes.Add(ControllerType.PS4);
+        using var editor = Editor(profile);
+        var family = editor.ControllerFamilies.Single(f => f.Icon == "PlayStation");
+        family.IsChecked.Should().BeNull();
+        family.IsActive.Should().BeTrue();
+        editor.IsDirty.Should().BeFalse();
+        family.IsChecked = true;
+        editor.ControllerTypes.Where(t => t.IsChecked).Select(t => t.Type).Should().BeEquivalentTo([ControllerType.PS4, ControllerType.PS5]);
+        editor.IsDirty.Should().BeTrue();
+        editor.RevertCommand.Execute(null);
+        family.IsChecked.Should().BeNull();
+        editor.IsDirty.Should().BeFalse();
+    }
 }

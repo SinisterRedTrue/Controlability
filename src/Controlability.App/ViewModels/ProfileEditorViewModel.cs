@@ -28,6 +28,17 @@ public sealed partial class ButtonBindingRow(ProfileEditorViewModel owner, Keybo
 
     public string Label { get; } = ControlLabels.Xbox(control);
 
+    public string DisplayLabel => Control switch
+    {
+        KeyboardControl.Back => "View", KeyboardControl.Start => "Menu", KeyboardControl.Guide => "Guide",
+        KeyboardControl.LeftThumb => "LS", KeyboardControl.RightThumb => "RS",
+        KeyboardControl.LeftShoulder => "LB", KeyboardControl.RightShoulder => "RB", _ => Label,
+    };
+
+    public string DisplaySource => SourceText.Replace("Share / Create", "Share").Replace(", Touchpad click", "").Replace("D-pad up", "Up").Replace("D-pad down", "Down").Replace("D-pad left", "Left").Replace("D-pad right", "Right");
+
+    partial void OnSourceTextChanged(string value) => OnPropertyChanged(nameof(DisplaySource));
+
     public IRelayCommand BindCommand { get; } = new RelayCommand(() => owner.BeginBind(control));
 
     public IRelayCommand ClearCommand { get; } = new RelayCommand(() => owner.ClearBinding(control));
@@ -38,6 +49,9 @@ public sealed partial class EditorKeyRow(ProfileEditorViewModel owner, KeyboardC
 {
     [ObservableProperty]
     private string _keyText = "";
+
+    public string DisplayKeyText => KeyText.Replace("MouseRight", "Right mouse button").Replace("MouseLeft", "Left mouse button").Replace("MouseMiddle", "Middle mouse button");
+    partial void OnKeyTextChanged(string value) => OnPropertyChanged(nameof(DisplayKeyText));
 
     [ObservableProperty]
     private bool _isCapturing;
@@ -88,6 +102,25 @@ public sealed partial class ControllerTypeOption(ControllerType type, Action<Con
     public string Label { get; } = PlayerCardViewModel.TypeName(type);
 
     partial void OnIsCheckedChanged(bool value) => changed(Type, value);
+}
+
+/// <summary>One family checkbox; a partial selection remains visible and is preserved until edited.</summary>
+public sealed class ControllerFamilyOption : ObservableObject
+{
+    private readonly ControllerTypeOption[] _types;
+    public string Label { get; }
+    public string Icon { get; }
+    public ControllerFamilyOption(string label, string icon, params ControllerTypeOption[] types)
+    {
+        Label = label; Icon = icon; _types = types;
+        foreach (var type in types) type.PropertyChanged += (_, _) => { OnPropertyChanged(nameof(IsChecked)); OnPropertyChanged(nameof(IsActive)); };
+    }
+    public bool? IsChecked
+    {
+        get => _types.All(t => t.IsChecked) ? true : _types.Any(t => t.IsChecked) ? null : false;
+        set { foreach (var type in _types) type.IsChecked = value == true; }
+    }
+    public bool IsActive => IsChecked != false;
 }
 
 /// <summary>
@@ -155,6 +188,14 @@ public sealed partial class ProfileEditorViewModel : ObservableObject, IDisposab
     private string _capturePrompt = "";
 
     [ObservableProperty]
+    private string _highlightedControl = "A";
+
+    public string HighlightedLabel => Enum.TryParse<KeyboardControl>(HighlightedControl, out var control)
+        ? ControlLabels.Xbox(control) + (HighlightedControl.Length == 1 ? " button" : "") : HighlightedControl;
+
+    partial void OnHighlightedControlChanged(string value) => OnPropertyChanged(nameof(HighlightedLabel));
+
+    [ObservableProperty]
     private string _newProcessName = "";
 
     [ObservableProperty]
@@ -193,6 +234,12 @@ public sealed partial class ProfileEditorViewModel : ObservableObject, IDisposab
         ButtonRows = [.. AllControls.Where(c => KeyboardControls.ToButton(c) != ButtonId.None).Select(c => new ButtonBindingRow(this, c))];
         KeyRows = [.. AllControls.Select(c => new EditorKeyRow(this, c))];
         ControllerTypes = [.. Enum.GetValues<ControllerType>().Select(t => new ControllerTypeOption(t, OnControllerTypeToggled))];
+        ControllerFamilies =
+        [
+            new("Generic (XInput)", "Generic", [.. ControllerTypes.Where(t => t.Type is ControllerType.Generic or ControllerType.Xbox)]),
+            new("PlayStation (DualShock / DualSense)", "PlayStation", [.. ControllerTypes.Where(t => t.Type is ControllerType.PS4 or ControllerType.PS5)]),
+            new("Nintendo (Switch)", "Nintendo", [.. ControllerTypes.Where(t => t.Type == ControllerType.SwitchPro)]),
+        ];
         ExtraRows = [.. ExtraButtons.Select(b => new ExtraButtonRow(b, ControlLabels.Xbox(XboxToControl(b)), OnExtraRowChanged))];
         GyroActivationOptions =
         [
@@ -219,9 +266,19 @@ public sealed partial class ProfileEditorViewModel : ObservableObject, IDisposab
 
     public IReadOnlyList<EditorKeyRow> KeyRows { get; }
 
+    public IEnumerable<EditorKeyRow> PrimaryKeyRows => KeyRows.Where(row => !IsAdditionalKey(row.Control))
+        .OrderBy(row => row.Control switch { KeyboardControl.LeftTrigger => 20, KeyboardControl.RightTrigger => 21, KeyboardControl.LeftShoulder => 22, KeyboardControl.RightShoulder => 23, KeyboardControl.Back => 30, KeyboardControl.Start => 31, _ => (int)row.Control });
+    public IEnumerable<EditorKeyRow> AdditionalKeyRows => KeyRows.Where(row => IsAdditionalKey(row.Control));
+    private static bool IsAdditionalKey(KeyboardControl control) => control is KeyboardControl.RightStickUp or KeyboardControl.RightStickDown or KeyboardControl.RightStickLeft or KeyboardControl.RightStickRight or KeyboardControl.Guide or KeyboardControl.LeftThumb or KeyboardControl.RightThumb or KeyboardControl.DpadUp or KeyboardControl.DpadDown or KeyboardControl.DpadLeft or KeyboardControl.DpadRight;
+
     public IReadOnlyList<ControllerTypeOption> ControllerTypes { get; }
 
+    public IReadOnlyList<ControllerFamilyOption> ControllerFamilies { get; }
+
     public IReadOnlyList<ExtraButtonRow> ExtraRows { get; }
+
+    public IEnumerable<ExtraButtonRow> PrimaryExtraRows => ExtraRows.Take(6);
+    public IEnumerable<ExtraButtonRow> AdditionalExtraRows => ExtraRows.Skip(6);
 
     public IReadOnlyList<ValueChoice<GyroActivation>> GyroActivationOptions { get; }
 
@@ -620,6 +677,7 @@ public sealed partial class ProfileEditorViewModel : ObservableObject, IDisposab
     /// <summary>Waits up to <see cref="BindTimeout"/> for a button on the controller and binds it to <paramref name="target"/>.</summary>
     public void BeginBind(KeyboardControl target)
     {
+        HighlightedControl = target.ToString();
         CancelKeyCapture();
         CancelBind();
         if (FindInputDevice() is not { } device)

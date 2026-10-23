@@ -14,7 +14,9 @@ public sealed partial class PlayerCardViewModel : ObservableObject
 
     private const string ActiveColor = "#22C55E";
     private const string WaitingColor = "#EAB308";
+    private const string PausedColor = "#EF4444";
     private const string EmptyColor = "#6B7280";
+    private const string KeyboardSource = "Windows input (keyboard and mouse)";
 
     private readonly IEngine _engine;
 
@@ -43,6 +45,27 @@ public sealed partial class PlayerCardViewModel : ObservableObject
     [ObservableProperty]
     private string _xInputText = "";
 
+    /// <summary>Just the profile's name, for the drop-down; <see cref="ProfileText"/> adds the "Profile:" prefix.</summary>
+    [ObservableProperty]
+    private string _profileName = "";
+
+    /// <summary>One line under the device name: the connection, or where a keyboard's input comes from.</summary>
+    [ObservableProperty]
+    private string _subtitleText = "";
+
+    [ObservableProperty]
+    private bool _isKeyboard;
+
+    [ObservableProperty]
+    private bool _hasBatteryLevel;
+
+    [ObservableProperty]
+    private string _batteryLevelText = "";
+
+    /// <summary>Width in device-independent pixels of the filled part of the battery glyph (0 to 16).</summary>
+    [ObservableProperty]
+    private double _batteryFillWidth;
+
     [ObservableProperty]
     private string _statusText = "";
 
@@ -61,6 +84,7 @@ public sealed partial class PlayerCardViewModel : ObservableObject
         _engine = engine;
         Index = index;
         Title = Strings.Format(Strings.PlayerTitle, index + 1);
+        ShortTitle = $"P{index + 1}";
         SlotColor = SlotColors[index];
         UnassignCommand = new RelayCommand(() => _engine.Unassign(Index), () => !IsEmpty);
         IdentifyCommand = new RelayCommand(() => _engine.Identify(Index), () => !IsEmpty);
@@ -72,6 +96,9 @@ public sealed partial class PlayerCardViewModel : ObservableObject
     public int Index { get; }
 
     public string Title { get; }
+
+    /// <summary>"P1" to "P4", the badge text on the card.</summary>
+    public string ShortTitle { get; }
 
     /// <summary>The slot color as <c>#RRGGBB</c>.</summary>
     public string SlotColor { get; }
@@ -87,6 +114,14 @@ public sealed partial class PlayerCardViewModel : ObservableObject
 
     public bool HasProfileOptions => ProfileOptions.Count > 0;
 
+    public IReadOnlyList<MenuOption> AssignOptions { get; private set; } = [];
+
+    public void SetAssignableDevices(IReadOnlyList<DeviceInfo> devices)
+    {
+        AssignOptions = devices.Select(device => new MenuOption(device.Name, () => _engine.Assign(device.Id, Index))).ToArray();
+        OnPropertyChanged(nameof(AssignOptions));
+    }
+
     public void Update(SlotStatus slot, DeviceInfo? info, BatteryInfo? battery, IReadOnlyList<ProfileChoice> profiles)
     {
         Device = slot.Device;
@@ -97,10 +132,17 @@ public sealed partial class PlayerCardViewModel : ObservableObject
         ConnectionText = IsEmpty ? "" : ConnectionName(info);
         DetailText = string.Join("  |  ", new[] { TypeText, ConnectionText }.Where(part => part.Length > 0));
         BatteryText = IsEmpty ? "" : BatteryName(battery, DeviceType);
+        IsKeyboard = !IsEmpty && DeviceType == ControllerType.Keyboard;
+        SubtitleText = IsKeyboard ? KeyboardSource : ConnectionText;
+        var level = IsEmpty ? null : BatteryLevel(battery, DeviceType);
+        HasBatteryLevel = level is not null;
+        BatteryLevelText = level is { } percent ? Strings.Format(Strings.BatteryPercent, percent) : "";
+        BatteryFillWidth = (level ?? 0) / 100.0 * 16;
         XInputText = slot.XInputIndex is { } xi ? Strings.Format(Strings.XInputLabel, xi + 1) : Strings.XInputUnknown;
 
         var profile = profiles.FirstOrDefault(choice => choice.Id == slot.ProfileId);
-        ProfileText = Strings.Format(Strings.ProfileLabel, profile?.Name ?? slot.ProfileId ?? Strings.ProfileNone);
+        ProfileName = profile?.Name ?? slot.ProfileId ?? Strings.ProfileNone;
+        ProfileText = Strings.Format(Strings.ProfileLabel, ProfileName);
         ProfileOptions = [.. profiles.Select(choice => new MenuOption(choice.Name, () => _engine.SetProfile(Index, choice.Id), choice.Id == slot.ProfileId))];
         OnPropertyChanged(nameof(ProfileOptions));
         OnPropertyChanged(nameof(HasProfileOptions));
@@ -109,7 +151,7 @@ public sealed partial class PlayerCardViewModel : ObservableObject
         {
             SlotState.Active => (Strings.SlotActiveStatus, ActiveColor),
             SlotState.Waiting => (Strings.SlotWaitingStatus, WaitingColor),
-            SlotState.Paused => (Strings.SlotPausedStatus, WaitingColor),
+            SlotState.Paused => (Strings.SlotPausedStatus, PausedColor),
             _ => (Strings.SlotEmptyStatus, EmptyColor),
         };
 
@@ -134,6 +176,17 @@ public sealed partial class PlayerCardViewModel : ObservableObject
         ConnectionType.Bluetooth => Strings.ConnectionBluetooth,
         _ => Strings.ConnectionUnknown,
     };
+
+    /// <summary>The charge in percent, or null for a wired pad, a keyboard or an unknown state.</summary>
+    internal static int? BatteryLevel(BatteryInfo? battery, ControllerType type)
+    {
+        if (type == ControllerType.Keyboard || battery is not { } info)
+        {
+            return null;
+        }
+
+        return info.State is BatteryState.Charging or BatteryState.Discharging or BatteryState.Full ? Math.Min((int)info.Percent, 100) : null;
+    }
 
     private static string BatteryName(BatteryInfo? battery, ControllerType type)
     {

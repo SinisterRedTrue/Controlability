@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Controlability.App.Resources;
@@ -12,11 +13,22 @@ using Controlability.Engine;
 
 namespace Controlability.App.ViewModels;
 
+/// <summary>One colour choice of the light bar, with whether it is the colour currently shown.</summary>
+public sealed partial class LedSwatchViewModel(string hex) : ObservableObject
+{
+    [ObservableProperty]
+    private bool _isSelected;
+
+    public string Hex { get; } = hex;
+
+    public Brush Brush { get; } = DeviceDetailViewModel.ParseBrush(hex) ?? Brushes.Transparent;
+}
+
 /// <summary>One device on the Devices page, with its details and the buttons that act on it.</summary>
 public sealed partial class DeviceDetailViewModel : ObservableObject
 {
     public static readonly IReadOnlyList<string> LedSwatches =
-        ["#FF0000", "#FF8800", "#FFFF00", "#00FF00", "#00FFFF", "#0000FF", "#8800FF", "#FF69B4", "#FFFFFF"];
+        ["#39BDF8", "#9B5CF6", "#E044D8", "#EF4444", "#FF9F2E", "#FFD60A", "#4ADE50", "#FFFFFF"];
 
     private readonly IEngine _engine;
     private bool _updating;
@@ -31,10 +43,35 @@ public sealed partial class DeviceDetailViewModel : ObservableObject
     private bool _canHide;
 
     [ObservableProperty]
-    private string _ledText = "#0000FF";
+    private string _ledText = "#39BDF8";
 
     [ObservableProperty]
     private string _ledError = "";
+
+    /// <summary>The colour in <see cref="LedText"/>, for the preview square of the colour box.</summary>
+    [ObservableProperty]
+    private Brush _ledPreview = Brushes.Transparent;
+
+    /// <summary>"P2", the badge of the list row while the device is on a player.</summary>
+    [ObservableProperty]
+    private string _playerBadge = "";
+
+    /// <summary>"Player 2", the badge of the header while the device is on a player.</summary>
+    [ObservableProperty]
+    private string _playerLabel = "";
+
+    [ObservableProperty]
+    private string _assignmentValue = "";
+
+    [ObservableProperty]
+    private bool _hasBatteryLevel;
+
+    [ObservableProperty]
+    private string _batteryLevelText = "";
+
+    /// <summary>Width in device-independent pixels of the filled part of the battery glyph (0 to 16).</summary>
+    [ObservableProperty]
+    private double _batteryFillWidth;
 
     public DeviceDetailViewModel(DeviceInfo info, IEngine engine)
     {
@@ -50,6 +87,13 @@ public sealed partial class DeviceDetailViewModel : ObservableObject
         CapabilitiesText = DescribeCapabilities(info.Capabilities);
         HasRumble = info.Capabilities.HasFlag(DeviceCapabilities.Rumble);
         HasLed = info.Capabilities.HasFlag(DeviceCapabilities.Led);
+        IsKeyboard = info.Type == ControllerType.Keyboard;
+        IsPlayStation = info.Type is ControllerType.PS4 or ControllerType.PS5;
+        TypeDescription = Describe(info.Type);
+        CapabilitiesDisplay = CapabilitiesText.Replace(", ", " / ", StringComparison.Ordinal);
+        HeaderSubtitle = IsKeyboard ? "Keyboard and mouse input" : $"Connected via {ConnectionText}";
+        Swatches = [.. LedSwatches.Select(hex => new LedSwatchViewModel(hex))];
+        OnLedTextChanged(LedText);
     }
 
     public DeviceInfo Info { get; }
@@ -74,14 +118,51 @@ public sealed partial class DeviceDetailViewModel : ObservableObject
 
     public bool HasLed { get; }
 
+    public bool IsKeyboard { get; }
+
+    /// <summary>A PlayStation pad: the live test draws it with its own layout.</summary>
+    public bool IsPlayStation { get; }
+
+    /// <summary>The long name of the device type, for the information table.</summary>
+    public string TypeDescription { get; }
+
+    /// <summary>The capabilities separated by slashes.</summary>
+    public string CapabilitiesDisplay { get; }
+
+    public string HeaderSubtitle { get; }
+
+    public bool HasConnection => ConnectionText.Length > 0;
+
+    public IReadOnlyList<LedSwatchViewModel> Swatches { get; }
+
+    /// <summary>The second line of the list row: the assignment for a keyboard, else how the pad is connected.</summary>
+    public string ListStatusText => IsKeyboard
+        ? (PlayerBadge.Length > 0 ? $"Assigned to {PlayerLabel}" : AssignmentText)
+        : string.Join(" • ", new[] { ConnectionText, "Connected" }.Where(part => part.Length > 0));
+
+    public bool HasPlayer => PlayerBadge.Length > 0;
+
+    public IReadOnlyList<MenuOption> AssignOptions =>
+        Enumerable.Range(0, 4).Select(slot => new MenuOption(
+            Strings.Format(Strings.AssignToPlayer, slot + 1), () => _engine.Assign(Id, slot))).ToArray();
+
     /// <summary>Type and connection, for the list row.</summary>
     public string SummaryText => string.Join(" - ", new[] { TypeText, ConnectionText }.Where(part => part.Length > 0));
 
     public string AutomationName => $"{Name}, {SummaryText}, {AssignmentText}";
 
-    public void Update(int? slot, bool hidden, bool hidHideAvailable)
+    public void Update(int? slot, bool hidden, bool hidHideAvailable, BatteryInfo? battery = null)
     {
         AssignmentText = slot is { } s ? Strings.Format(Strings.DeviceAssigned, s + 1) : Strings.DeviceUnassigned;
+        AssignmentValue = slot is { } p ? $"Player {p + 1}" : Strings.DeviceUnassigned;
+        PlayerBadge = slot is { } n ? $"P{n + 1}" : "";
+        PlayerLabel = slot is { } q ? $"Player {q + 1}" : "";
+        var level = PlayerCardViewModel.BatteryLevel(battery, Info.Type);
+        HasBatteryLevel = level is not null;
+        BatteryLevelText = level is { } percent ? $"Battery {Strings.Format(Strings.BatteryPercent, percent)}" : "";
+        BatteryFillWidth = (level ?? 0) / 100.0 * 16;
+        OnPropertyChanged(nameof(ListStatusText));
+        OnPropertyChanged(nameof(HasPlayer));
         CanHide = hidHideAvailable && Info.Type != ControllerType.Keyboard;
         _updating = true;
         IsHidden = hidden;
@@ -94,6 +175,15 @@ public sealed partial class DeviceDetailViewModel : ObservableObject
         if (!_updating)
         {
             _engine.SetDeviceHidden(Id, value);
+        }
+    }
+
+    partial void OnLedTextChanged(string value)
+    {
+        LedPreview = ParseBrush(value) ?? Brushes.Transparent;
+        foreach (var swatch in Swatches ?? [])
+        {
+            swatch.IsSelected = string.Equals(swatch.Hex, value.Trim(), StringComparison.OrdinalIgnoreCase);
         }
     }
 
@@ -115,6 +205,28 @@ public sealed partial class DeviceDetailViewModel : ObservableObject
         LedText = hex.Trim().ToUpperInvariant();
         _engine.SetLedColor(Id, r, g, b);
     }
+
+    internal static Brush? ParseBrush(string text)
+    {
+        if (!TryParseColor(text, out var r, out var g, out var b))
+        {
+            return null;
+        }
+
+        var brush = new SolidColorBrush(Color.FromRgb(r, g, b));
+        brush.Freeze();
+        return brush;
+    }
+
+    private static string Describe(ControllerType type) => type switch
+    {
+        ControllerType.PS4 => "PlayStation 4 Controller (DUALSHOCK 4)",
+        ControllerType.PS5 => "PlayStation 5 Controller (DualSense)",
+        ControllerType.SwitchPro => "Nintendo Switch Pro Controller",
+        ControllerType.Xbox => "Xbox Controller",
+        ControllerType.Keyboard => "Keyboard and mouse",
+        _ => "Generic game controller",
+    };
 
     internal static bool TryParseColor(string text, out byte r, out byte g, out byte b)
     {
@@ -156,13 +268,25 @@ public sealed partial class DeviceDetailViewModel : ObservableObject
 /// <summary>The devices page: every device the engine sees, with details, actions and the live test panels.</summary>
 public sealed partial class DevicesViewModel : ObservableObject, IDisposable
 {
+    /// <summary>Battery levels do not raise <see cref="IEngine.Changed"/>, so they are polled slowly.</summary>
+    private static readonly TimeSpan BatteryPollInterval = TimeSpan.FromSeconds(5);
+
     private readonly IEngine _engine;
     private readonly IProfileEditor _profiles;
     private readonly ThrottledAction _throttle;
+    private readonly IDisposable _batteryTimer;
     private bool _disposed;
 
     [ObservableProperty]
     private DeviceDetailViewModel? _selected;
+
+    /// <summary>The device name in brackets, beside the title of the physical-input panel.</summary>
+    [ObservableProperty]
+    private string _rawTitle = "";
+
+    /// <summary>Whether the physical-input panel draws a PlayStation pad rather than the generic one.</summary>
+    [ObservableProperty]
+    private bool _rawIsPlayStation;
 
     [ObservableProperty]
     private double _leftInner = DeadZone.Default.Inner;
@@ -187,6 +311,7 @@ public sealed partial class DevicesViewModel : ObservableObject, IDisposable
         _throttle = new ThrottledAction(ui, clock, DashboardViewModel.RefreshInterval, Refresh);
         Refresh();
         _engine.Changed += _throttle.Request;
+        _batteryTimer = ui.Every(BatteryPollInterval, Refresh);
     }
 
     public ObservableCollection<DeviceDetailViewModel> Devices { get; } = [];
@@ -206,11 +331,14 @@ public sealed partial class DevicesViewModel : ObservableObject, IDisposable
 
         _disposed = true;
         _engine.Changed -= _throttle.Request;
+        _batteryTimer.Dispose();
     }
 
     partial void OnSelectedChanged(DeviceDetailViewModel? value)
     {
         Live.Device = value?.Id;
+        RawTitle = value is null ? "" : $"({value.Name})";
+        RawIsPlayStation = value?.IsPlayStation == true;
         RefreshDeadZones();
     }
 
@@ -246,7 +374,8 @@ public sealed partial class DevicesViewModel : ObservableObject, IDisposable
         foreach (var device in Devices)
         {
             var slot = slots.FirstOrDefault(s => s.Device == device.Id);
-            device.Update(slot?.Index, hidden.Contains(device.Id), drivers.HidHideAvailable);
+            BatteryInfo? battery = _engine.TryGetLiveState(device.Id, out var raw, out _) ? raw.Battery : null;
+            device.Update(slot?.Index, hidden.Contains(device.Id), drivers.HidHideAvailable, battery);
         }
 
         RefreshDeadZones();

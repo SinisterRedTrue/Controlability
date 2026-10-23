@@ -13,12 +13,30 @@ public partial class DashboardPage : Page
     private readonly DashboardViewModel _viewModel;
     private Point _dragStart;
 
+    private void OnDashboardLayoutSizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        var wide = e.NewSize.Width >= 1000;
+        DetectedColumn.Width = new GridLength(wide ? 360 : 0);
+        Grid.SetColumn(DetectedPanel, wide ? 1 : 0);
+        Grid.SetRow(DetectedPanel, wide ? 1 : 5);
+        Grid.SetRowSpan(DetectedPanel, wide ? 4 : 1);
+        DetectedPanel.Margin = wide ? new Thickness(12, 0, 0, 0) : new Thickness(0, 12, 0, 0);
+    }
+
     public DashboardPage(DashboardViewModel viewModel, SteamTipViewModel steamTip)
     {
         _viewModel = viewModel;
         DataContext = viewModel;
         InitializeComponent();
         SteamTipBanner.DataContext = steamTip;
+    }
+
+    private void OnAssignClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: DeviceItemViewModel device } anchor)
+        {
+            PlayerCard.OpenMenu(anchor, device.AssignOptions);
+        }
     }
 
     private void OnDeviceMouseDown(object sender, MouseButtonEventArgs e) => _dragStart = e.GetPosition(null);

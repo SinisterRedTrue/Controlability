@@ -1,3 +1,4 @@
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -19,7 +20,8 @@ public sealed class TrayIconHost : INotifier, IDisposable
     private readonly MenuItem _pauseItem;
     private readonly MenuItem _modeA;
     private readonly MenuItem _modeB;
-    private readonly Dictionary<TrayState, System.Drawing.Icon> _icons = [];
+    private readonly Dictionary<TrayState, byte[]> _iconData = [];
+    private TrayState? _shownState;
     private bool _disposed;
 
     public TrayIconHost(TrayViewModel viewModel)
@@ -73,15 +75,17 @@ public sealed class TrayIconHost : INotifier, IDisposable
         _disposed = true;
         _viewModel.Updated -= Redraw;
         _icon.Dispose();
-        foreach (var icon in _icons.Values)
-        {
-            icon.Dispose();
-        }
     }
 
     private void Redraw()
     {
-        _icon.Icon = IconFor(_viewModel.State);
+        if (_shownState != _viewModel.State)
+        {
+            // TaskbarIcon disposes the icon it replaces, so every assignment gets a fresh Icon.
+            _icon.Icon = IconFor(_viewModel.State);
+            _shownState = _viewModel.State;
+        }
+
         _icon.ToolTipText = _viewModel.Tooltip;
         for (var i = 0; i < _slotItems.Length && i < _viewModel.SlotLines.Count; i++)
         {
@@ -95,7 +99,7 @@ public sealed class TrayIconHost : INotifier, IDisposable
 
     private System.Drawing.Icon IconFor(TrayState state)
     {
-        if (!_icons.TryGetValue(state, out var icon))
+        if (!_iconData.TryGetValue(state, out var data))
         {
             var name = state switch
             {
@@ -103,15 +107,14 @@ public sealed class TrayIconHost : INotifier, IDisposable
                 TrayState.Error => "tray-error",
                 _ => "tray-normal",
             };
-            var stream = Application.GetResourceStream(new Uri($"pack://application:,,,/Resources/Icons/{name}.ico", UriKind.Absolute))!.Stream;
-            using (stream)
-            {
-                icon = new System.Drawing.Icon(stream);
-            }
-
-            _icons[state] = icon;
+            using var stream = Application.GetResourceStream(new Uri($"pack://application:,,,/Resources/Icons/{name}.ico", UriKind.Absolute))!.Stream;
+            using var buffer = new MemoryStream();
+            stream.CopyTo(buffer);
+            data = buffer.ToArray();
+            _iconData[state] = data;
         }
 
-        return icon;
+        using var icon = new MemoryStream(data);
+        return new System.Drawing.Icon(icon);
     }
 }

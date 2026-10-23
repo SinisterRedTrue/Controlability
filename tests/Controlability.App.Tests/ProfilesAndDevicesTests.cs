@@ -230,6 +230,38 @@ public sealed class DevicesViewModelTests : IDisposable
     }
 
     [Fact]
+    public void TheHeaderAndRowShowThePlayerAndBattery()
+    {
+        _engine.Live[Pad.Id] = new InputState { Battery = new BatteryInfo(BatteryState.Full, 100) };
+
+        _vm.Refresh();
+
+        var pad = _vm.Selected!;
+        pad.PlayerBadge.Should().Be("P1");
+        pad.PlayerLabel.Should().Be("Player 1");
+        pad.AssignmentValue.Should().Be("Player 1");
+        pad.ListStatusText.Should().Be("USB • Connected");
+        pad.HeaderSubtitle.Should().Be("Connected via USB");
+        pad.BatteryLevelText.Should().Be("Battery 100%");
+        pad.CapabilitiesDisplay.Should().Be("Rumble / Light bar");
+        _vm.Devices[1].HasPlayer.Should().BeFalse();
+        _vm.RawIsPlayStation.Should().BeTrue();
+        _vm.RawTitle.Should().Be("(pad)");
+    }
+
+    [Fact]
+    public void TheLightColourBoxSelectsTheMatchingSwatch()
+    {
+        var pad = _vm.Selected!;
+
+        pad.SetLedCommand.Execute("#ff8800");
+        pad.Swatches.Should().OnlyContain(s => !s.IsSelected, "that colour is not a swatch");
+
+        pad.SetLedCommand.Execute(pad.Swatches[1].Hex);
+        pad.Swatches.Where(s => s.IsSelected).Should().ContainSingle().Which.Should().BeSameAs(pad.Swatches[1]);
+    }
+
+    [Fact]
     public void RumbleTestAndLed_GoThroughTheEngine()
     {
         var pad = _vm.Selected!;

@@ -1,0 +1,230 @@
+<UserControl x:Class="Controlability.App.Controls.PadDiagram"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:res="clr-namespace:Controlability.App.Resources"
+             AutomationProperties.LiveSetting="Off">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Controlability;component/Resources/ControllerBrandMarks.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        <!-- One definition per mirrored part prevents the two sides drifting apart. -->
+        <Geometry x:Key="PsShoulderGeometry">M 44,29 C 43,18 54,10 73,9 C 85,8 95,11 99,16 L 99,24 Z</Geometry>
+        <Geometry x:Key="XboxShoulderGeometry">M 47,28 C 46,16 60,7 81,6 C 95,5 104,8 106,14 L 106,24 Z</Geometry>
+        <Geometry x:Key="PsDpadGeometry">M 65,47 Q 72,45 79,47 L 79,58 L 72,65 L 65,58 Z</Geometry>
+        <DrawingBrush x:Key="TouchTexture" TileMode="Tile" Viewport="0,0,3,3" ViewportUnits="Absolute" Viewbox="0,0,3,3" ViewboxUnits="Absolute">
+            <DrawingBrush.Drawing><GeometryDrawing Brush="#607383" Geometry="M 0,0 L 0.7,0 L 0.7,0.7 L 0,0.7 Z"/></DrawingBrush.Drawing>
+        </DrawingBrush>
+        <Style x:Key="Body" TargetType="Shape">
+            <Setter Property="Fill" Value="{DynamicResource DeviceShellBrush}" />
+            <Setter Property="Stroke" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+            <Setter Property="StrokeThickness" Value="1.1" />
+            <Setter Property="StrokeLineJoin" Value="Round" />
+        </Style>
+        <Style x:Key="Part" TargetType="Shape">
+            <Setter Property="Fill" Value="{DynamicResource DevicePartBrush}" />
+            <Setter Property="Stroke" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+            <Setter Property="StrokeThickness" Value="1" />
+        </Style>
+        <Style x:Key="DirectionHit" TargetType="Shape" BasedOn="{StaticResource Part}">
+            <Setter Property="Fill" Value="Transparent"/>
+            <Setter Property="StrokeThickness" Value="0"/>
+        </Style>
+        <Style x:Key="Backdrop" TargetType="Ellipse">
+            <Setter Property="Fill" Value="Transparent" />
+            <Setter Property="Stroke" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+            <Setter Property="StrokeThickness" Value="1.2" />
+        </Style>
+        <Style x:Key="Ring" TargetType="Ellipse">
+            <Setter Property="Fill" Value="Transparent" />
+            <Setter Property="Stroke" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+            <Setter Property="StrokeThickness" Value="1" />
+            <Setter Property="Opacity" Value="0.3" />
+            <Setter Property="IsHitTestVisible" Value="False" />
+        </Style>
+        <Style x:Key="Glyph" TargetType="Shape">
+            <Setter Property="Fill" Value="Transparent" />
+            <Setter Property="StrokeThickness" Value="1.8" />
+            <Setter Property="StrokeLineJoin" Value="Round" />
+            <Setter Property="StrokeStartLineCap" Value="Round" />
+            <Setter Property="StrokeEndLineCap" Value="Round" />
+            <Setter Property="IsHitTestVisible" Value="False" />
+        </Style>
+        <Style x:Key="Caption" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Width" Value="110" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="TextWrapping" Value="NoWrap" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+            <Setter Property="IsHitTestVisible" Value="False" />
+        </Style>
+        <Style x:Key="Mini" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="7" />
+            <Setter Property="Width" Value="40" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="TextWrapping" Value="NoWrap" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+            <Setter Property="IsHitTestVisible" Value="False" />
+        </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid UseLayoutRounding="False">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel x:Name="DiagramHeading" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,15">
+            <TextBlock x:Name="TitleText" FontSize="15.5" FontWeight="SemiBold" TextWrapping="NoWrap" />
+            <TextBlock x:Name="SubtitleText" FontSize="15.5" Margin="10,0,0,0" TextWrapping="NoWrap"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+        </StackPanel>
+
+        <Viewbox Grid.Row="1" Stretch="Uniform" StretchDirection="DownOnly" Height="240" HorizontalAlignment="Left" VerticalAlignment="Top">
+        <Grid x:Name="DiagramLayout" Width="590" Height="232" HorizontalAlignment="Left">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="BarsColumn" Width="112" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition x:Name="RightBarsColumn" Width="112" />
+            </Grid.ColumnDefinitions>
+            <StackPanel x:Name="LeftBars" Orientation="Horizontal" VerticalAlignment="Top" Margin="0,20,18,0" />
+
+            <Viewbox Grid.Column="1" Stretch="Uniform" StretchDirection="DownOnly" MaxHeight="232" VerticalAlignment="Top" HorizontalAlignment="Left">
+                <Grid>
+                    <!-- PlayStation layout -->
+                    <Canvas x:Name="PsCanvas" Width="394" Height="232" Visibility="Collapsed">
+                        <Path x:Name="PsLb" Style="{StaticResource Part}" Data="{StaticResource PsShoulderGeometry}"/>
+                        <Path x:Name="PsRb" Style="{StaticResource Part}" Data="{StaticResource PsShoulderGeometry}" RenderTransform="-1,0,0,1,394,0"/>
+                        <Path x:Name="PsBody" Style="{StaticResource Body}"
+                              Data="M 69,16 C 45,16 31,39 22,73 C 10,116 1,154 2,185 C 2,211 12,230 32,230 C 49,230 65,212 81,174 C 86,161 93,159 109,159 L 285,159 C 301,159 308,161 313,174 C 329,212 345,230 362,230 C 382,230 392,211 392,185 C 393,154 384,116 372,73 C 363,39 349,16 325,16 Z"/>
+                        <Path Stroke="#718294" StrokeThickness="1" Fill="Transparent" Data="M 2,181 C 19,204 44,214 69,200 M 325,200 C 350,214 375,204 392,181 M 88,165 Q 99,156 120,161 L 274,161 Q 295,156 306,165"/>
+                        <Path Stroke="#72869A" StrokeThickness="0.8" Fill="Transparent" Data="M 26,73 C 33,37 49,21 70,20 L 324,20 C 345,21 361,37 368,73"/>
+                        <Rectangle x:Name="PsTouchpad" Style="{StaticResource Part}" Fill="#111B25" Canvas.Left="131" Canvas.Top="18" Width="132" Height="70" RadiusX="4" RadiusY="4"/>
+                        <Rectangle Fill="{StaticResource TouchTexture}" Canvas.Left="134" Canvas.Top="21" Width="126" Height="64" RadiusX="3" RadiusY="3" Opacity="0.65"/>
+                        <Canvas>
+                            <Ellipse Canvas.Left="183.8" Canvas.Top="96.8" Width="2.4" Height="2.4" Stroke="#74889B" StrokeThickness="0.65"/>
+                            <Ellipse Canvas.Left="189.8" Canvas.Top="96.8" Width="2.4" Height="2.4" Stroke="#74889B" StrokeThickness="0.65"/>
+                            <Ellipse Canvas.Left="195.8" Canvas.Top="96.8" Width="2.4" Height="2.4" Stroke="#74889B" StrokeThickness="0.65"/>
+                            <Ellipse Canvas.Left="201.8" Canvas.Top="96.8" Width="2.4" Height="2.4" Stroke="#74889B" StrokeThickness="0.65"/>
+                            <Ellipse Canvas.Left="207.8" Canvas.Top="96.8" Width="2.4" Height="2.4" Stroke="#74889B" StrokeThickness="0.65"/>
+                            <Ellipse Canvas.Left="186.8" Canvas.Top="102.8" Width="2.4" Height="2.4" Stroke="#74889B" StrokeThickness="0.65"/>
+                            <Ellipse Canvas.Left="192.8" Canvas.Top="102.8" Width="2.4" Height="2.4" Stroke="#74889B" StrokeThickness="0.65"/>
+                            <Ellipse Canvas.Left="198.8" Canvas.Top="102.8" Width="2.4" Height="2.4" Stroke="#74889B" StrokeThickness="0.65"/>
+                            <Ellipse Canvas.Left="204.8" Canvas.Top="102.8" Width="2.4" Height="2.4" Stroke="#74889B" StrokeThickness="0.65"/>
+                            <Ellipse Canvas.Left="189.8" Canvas.Top="108.8" Width="2.4" Height="2.4" Stroke="#74889B" StrokeThickness="0.65"/>
+                            <Ellipse Canvas.Left="195.8" Canvas.Top="108.8" Width="2.4" Height="2.4" Stroke="#74889B" StrokeThickness="0.65"/>
+                            <Ellipse Canvas.Left="201.8" Canvas.Top="108.8" Width="2.4" Height="2.4" Stroke="#74889B" StrokeThickness="0.65"/>
+                        </Canvas>
+                        <Rectangle x:Name="PsShare" Style="{StaticResource Part}" Canvas.Left="108" Canvas.Top="27" Width="12" Height="20" RadiusX="5" RadiusY="5"/>
+                        <Rectangle x:Name="PsOptions" Style="{StaticResource Part}" Canvas.Left="274" Canvas.Top="27" Width="12" Height="20" RadiusX="5" RadiusY="5"/>
+                        <TextBlock Style="{StaticResource Mini}" Text="SHARE" Canvas.Left="94" Canvas.Top="17"/>
+                        <TextBlock Style="{StaticResource Mini}" Text="OPTIONS" Canvas.Left="260" Canvas.Top="17"/>
+
+                        <Canvas RenderTransform="1,0,0,1,0,3">
+                            <Ellipse x:Name="PsDpadSurround" Style="{StaticResource Backdrop}" Canvas.Left="30" Canvas.Top="30" Width="84" Height="84"/>
+                            <Path x:Name="PsDpadUp" Style="{StaticResource Part}" Data="{StaticResource PsDpadGeometry}"/>
+                            <Path x:Name="PsDpadRight" Style="{StaticResource Part}" Data="{StaticResource PsDpadGeometry}" RenderTransform="0,1,-1,0,144,0"/>
+                            <Path x:Name="PsDpadDown" Style="{StaticResource Part}" Data="{StaticResource PsDpadGeometry}" RenderTransform="-1,0,0,-1,144,144"/>
+                            <Path x:Name="PsDpadLeft" Style="{StaticResource Part}" Data="{StaticResource PsDpadGeometry}" RenderTransform="0,-1,1,0,0,144"/>
+                            <Path Fill="#617181" Data="M 68,39 L 72,34 L 76,39 Z M 68,105 L 72,110 L 76,105 Z M 39,68 L 34,72 L 39,76 Z M 105,68 L 110,72 L 105,76 Z"/>
+                        </Canvas>
+                        <Canvas RenderTransform="1,0,0,1,0,3">
+                            <Ellipse x:Name="PsFaceSurround" Style="{StaticResource Backdrop}" Canvas.Left="280" Canvas.Top="30" Width="84" Height="84"/>
+                            <Ellipse x:Name="PsTriangle" Style="{StaticResource Part}" Canvas.Left="310" Canvas.Top="32" Width="24" Height="24"/>
+                            <Ellipse x:Name="PsSquare" Style="{StaticResource Part}" Canvas.Left="282" Canvas.Top="60" Width="24" Height="24"/>
+                            <Ellipse x:Name="PsCircle" Style="{StaticResource Part}" Canvas.Left="338" Canvas.Top="60" Width="24" Height="24"/>
+                            <Ellipse x:Name="PsCross" Style="{StaticResource Part}" Canvas.Left="310" Canvas.Top="88" Width="24" Height="24"/>
+                            <Path Style="{StaticResource Glyph}" Stroke="#3DD6A0" Data="M 0,-6 L 6.5,5 L -6.5,5 Z" Canvas.Left="322" Canvas.Top="44"/>
+                            <Rectangle Style="{StaticResource Glyph}" Stroke="#E266B8" Width="11" Height="11" Canvas.Left="288.5" Canvas.Top="66.5"/>
+                            <Ellipse Style="{StaticResource Glyph}" Stroke="#EC5B45" Width="12" Height="12" Canvas.Left="344" Canvas.Top="66"/>
+                            <Path Style="{StaticResource Glyph}" Stroke="#4C93F2" Data="M -5.5,-5.5 L 5.5,5.5 M 5.5,-5.5 L -5.5,5.5" Canvas.Left="322" Canvas.Top="100"/>
+                        </Canvas>
+                        <Ellipse x:Name="PsLsWell" Style="{StaticResource Part}" Canvas.Left="98" Canvas.Top="105" Width="60" Height="60" />
+                        <Ellipse Fill="{DynamicResource DeviceStickBrush}" Stroke="#607E94" StrokeThickness="0.7" Canvas.Left="91" Canvas.Top="98" Width="74" Height="74" IsHitTestVisible="False"/>
+                        <Ellipse x:Name="PsLsCap" Style="{StaticResource Part}" Stroke="#6A8CA7" StrokeThickness="1" Canvas.Left="105" Canvas.Top="112" Width="46" Height="46" IsHitTestVisible="False"/>
+                        <Ellipse Stroke="#3D566A" StrokeThickness="1" Canvas.Left="109" Canvas.Top="116" Width="38" Height="38" IsHitTestVisible="False"/>
+                        <Ellipse x:Name="PsLsOuter" Style="{StaticResource Ring}" />
+                        <Ellipse x:Name="PsLsInner" Style="{StaticResource Ring}" />
+                        <Ellipse x:Name="PsLsDot" Width="5" Height="5" IsHitTestVisible="False" />
+                        <Ellipse x:Name="PsRsWell" Style="{StaticResource Part}" Canvas.Left="236" Canvas.Top="105" Width="60" Height="60" />
+                        <Ellipse Fill="{DynamicResource DeviceStickBrush}" Stroke="#607E94" StrokeThickness="0.7" Canvas.Left="229" Canvas.Top="98" Width="74" Height="74" IsHitTestVisible="False"/>
+                        <Ellipse x:Name="PsRsCap" Style="{StaticResource Part}" Stroke="#6A8CA7" StrokeThickness="1" Canvas.Left="243" Canvas.Top="112" Width="46" Height="46" IsHitTestVisible="False"/>
+                        <Ellipse Stroke="#3D566A" StrokeThickness="1" Canvas.Left="247" Canvas.Top="116" Width="38" Height="38" IsHitTestVisible="False"/>
+                        <Ellipse x:Name="PsRsOuter" Style="{StaticResource Ring}" />
+                        <Ellipse x:Name="PsRsInner" Style="{StaticResource Ring}" />
+                        <Ellipse x:Name="PsRsDot" Width="5" Height="5" IsHitTestVisible="False" />
+
+                        <Ellipse x:Name="PsHome" Style="{StaticResource Part}" Canvas.Left="187" Canvas.Top="122" Width="20" Height="20"/>
+                        <Viewbox Canvas.Left="189" Canvas.Top="124" Width="16" Height="16" IsHitTestVisible="False">
+                            <Path x:Name="PsEmblem" Fill="{DynamicResource TextFillColorPrimaryBrush}" Data="{StaticResource PlayStationBrandMark}"/>
+                        </Viewbox>
+                        <Line X1="128" Y1="171" X2="128" Y2="203" Stroke="{DynamicResource TextFillColorTertiaryBrush}" StrokeThickness="0.8" />
+                        <Line X1="266" Y1="171" X2="266" Y2="203" Stroke="{DynamicResource TextFillColorTertiaryBrush}" StrokeThickness="0.8" />
+                        <TextBlock x:Name="PsLeftText" Style="{StaticResource Caption}" Canvas.Left="73" Canvas.Top="210" />
+                        <TextBlock x:Name="PsRightText" Style="{StaticResource Caption}" Canvas.Left="211" Canvas.Top="210" />
+                    </Canvas>
+
+                    <!-- Xbox layout -->
+                    <Canvas x:Name="XbCanvas" Width="346" Height="232" RenderTransform="1,0,0,1,2,-2" Visibility="Collapsed">
+                        <Path x:Name="XbLb" Style="{StaticResource Part}" Data="{StaticResource XboxShoulderGeometry}"/>
+                        <Path x:Name="XbRb" Style="{StaticResource Part}" Data="{StaticResource XboxShoulderGeometry}" RenderTransform="-1,0,0,1,346,0"/>
+                        <Path x:Name="XbBody" Style="{StaticResource Body}" Data="M 65,16 C 43,20 30,46 22,79 C 12,121 3,164 3,193 C 3,212 11,226 23,226 C 38,226 61,202 83,181 C 106,160 127,160 173,160 C 219,160 240,160 263,181 C 285,202 308,226 323,226 C 335,226 343,212 343,193 C 343,164 334,121 324,79 C 316,46 303,20 281,16 C 251,5 219,28 173,28 C 127,28 95,5 65,16 Z"/>
+                        <Canvas Clip="{Binding Data, ElementName=XbBody}">
+                            <Path x:Name="XbGripSeam" Stroke="#6D8094" StrokeThickness="1" Fill="Transparent" Data="M 14,222 C 37,194 71,164 97,159 C 124,153 222,153 249,159 C 275,164 309,194 332,222"/>
+                            <Path Stroke="#6D8094" StrokeThickness="1" Fill="Transparent" Data="M 32,58 Q 48,19 77,19 C 108,13 133,33 173,33 C 213,33 238,13 269,19 Q 298,19 314,58"/>
+                        </Canvas>
+
+                        <Ellipse x:Name="XbLsWell" Style="{StaticResource Part}" Canvas.Left="44" Canvas.Top="30" Width="60" Height="60"/>
+                        <Ellipse x:Name="XbLsCap" Style="{StaticResource Part}" Canvas.Left="52" Canvas.Top="38" Width="44" Height="44" IsHitTestVisible="False"/>
+                        <Ellipse Stroke="#4F6072" StrokeThickness="1" Canvas.Left="58" Canvas.Top="44" Width="32" Height="32" IsHitTestVisible="False"/>
+                        <Ellipse x:Name="XbLsOuter" Style="{StaticResource Ring}"/>
+                        <Ellipse x:Name="XbLsInner" Visibility="Collapsed" Style="{StaticResource Ring}"/>
+                        <Ellipse x:Name="XbLsDot" Width="5" Height="5" IsHitTestVisible="False"/>
+
+                        <Ellipse Style="{StaticResource Backdrop}" Canvas.Left="99" Canvas.Top="84" Width="66" Height="66"/>
+                        <Path Style="{StaticResource Part}" StrokeLineJoin="Round" Data="M 123,93 Q 132,90 141,93 L 141,108 L 156,108 Q 159,117 156,126 L 141,126 L 141,141 Q 132,144 123,141 L 123,126 L 108,126 Q 105,117 108,108 L 123,108 Z"/>
+                        <Path x:Name="XbDpadUp" Style="{StaticResource DirectionHit}" Data="M 123,93 L 141,93 L 141,111 L 132,117 L 123,111 Z"/>
+                        <Path x:Name="XbDpadDown" Style="{StaticResource DirectionHit}" Data="M 123,141 L 141,141 L 141,123 L 132,117 L 123,123 Z"/>
+                        <Path x:Name="XbDpadLeft" Style="{StaticResource DirectionHit}" Data="M 108,108 L 123,108 L 132,117 L 123,126 L 108,126 Z"/>
+                        <Path x:Name="XbDpadRight" Style="{StaticResource DirectionHit}" Data="M 156,108 L 141,108 L 132,117 L 141,126 L 156,126 Z"/>
+
+                        <Ellipse x:Name="XbRsWell" Style="{StaticResource Part}" Canvas.Left="186" Canvas.Top="87" Width="60" Height="60"/>
+                        <Ellipse x:Name="XbRsCap" Style="{StaticResource Part}" Canvas.Left="194" Canvas.Top="95" Width="44" Height="44" IsHitTestVisible="False"/>
+                        <Ellipse Stroke="#4F6072" StrokeThickness="1" Canvas.Left="200" Canvas.Top="101" Width="32" Height="32" IsHitTestVisible="False"/>
+                        <Ellipse x:Name="XbRsOuter" Style="{StaticResource Ring}"/>
+                        <Ellipse x:Name="XbRsInner" Visibility="Collapsed" Style="{StaticResource Ring}"/>
+                        <Ellipse x:Name="XbRsDot" Width="5" Height="5" IsHitTestVisible="False"/>
+
+                        <Canvas Canvas.Left="256" Canvas.Top="26" Width="24" Height="24">
+                            <Ellipse x:Name="XbY" Style="{StaticResource Part}" Width="24" Height="24"/>
+                            <Path Style="{StaticResource Glyph}" Stroke="#F2C230" StrokeThickness="1.7" Data="M -5,-6 L 0,0 L 5,-6 M 0,0 L 0,6" Canvas.Left="12" Canvas.Top="12"/>
+                        </Canvas>
+                        <Canvas Canvas.Left="230" Canvas.Top="52" Width="24" Height="24">
+                            <Ellipse x:Name="XbX" Style="{StaticResource Part}" Width="24" Height="24"/>
+                            <Path Style="{StaticResource Glyph}" Stroke="#2D8CF0" StrokeThickness="1.7" Data="M -5,-6 L 5,6 M 5,-6 L -5,6" Canvas.Left="12" Canvas.Top="12"/>
+                        </Canvas>
+                        <Canvas Canvas.Left="282" Canvas.Top="52" Width="24" Height="24">
+                            <Ellipse x:Name="XbB" Style="{StaticResource Part}" Width="24" Height="24"/>
+                            <Path Style="{StaticResource Glyph}" Stroke="#E4382F" StrokeThickness="1.7" Data="M -4,-6 L -4,6 L 1,6 C 7,6 7,0 1,0 L -4,0 M 1,0 C 6,0 6,-6 1,-6 L -4,-6" Canvas.Left="12" Canvas.Top="12"/>
+                        </Canvas>
+                        <Canvas Canvas.Left="256" Canvas.Top="78" Width="24" Height="24">
+                            <Ellipse x:Name="XbA" Style="{StaticResource Part}" Width="24" Height="24"/>
+                            <Path Style="{StaticResource Glyph}" Stroke="#3BB54A" StrokeThickness="1.7" Data="M -5,6 L 0,-6 L 5,6 M -3,2 L 3,2" Canvas.Left="12" Canvas.Top="12"/>
+                        </Canvas>
+                        <Ellipse x:Name="XbBack" Style="{StaticResource Part}" Canvas.Left="137" Canvas.Top="60" Width="14" Height="9"/>
+                        <Ellipse x:Name="XbStart" Style="{StaticResource Part}" Canvas.Left="195" Canvas.Top="60" Width="14" Height="9"/>
+                        <Ellipse x:Name="XbGuide" Style="{StaticResource Part}" StrokeThickness="0" Canvas.Left="159" Canvas.Top="36" Width="28" Height="28"/>
+                        <Path x:Name="XbEmblem" Fill="{DynamicResource TextFillColorPrimaryBrush}" Data="{StaticResource XboxBrandMark}" Stretch="Uniform" Canvas.Left="159" Canvas.Top="36" Width="28" Height="28" IsHitTestVisible="False"/>
+
+                        <TextBlock x:Name="XbLeftText" Style="{StaticResource Caption}" Canvas.Left="52" Canvas.Top="210" />
+                        <TextBlock x:Name="XbRightText" Style="{StaticResource Caption}" Canvas.Left="184" Canvas.Top="210" />
+                    </Canvas>
+                </Grid>
+            </Viewbox>
+
+            <StackPanel x:Name="RightBars" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Top" Margin="18,20,0,0" />
+        </Grid>
+        </Viewbox>
+    </Grid>
+</UserControl>

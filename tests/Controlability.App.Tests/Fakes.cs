@@ -123,6 +123,8 @@ public sealed class FakeEngine : IEngine
 
     public Dictionary<DeviceId, InputState> Live { get; } = [];
 
+    public Dictionary<DeviceId, XboxState> Mapped { get; } = [];
+
     public List<string> Calls { get; } = [];
 
     public int ChangedSubscribers => Changed?.GetInvocationList().Length ?? 0;
@@ -188,7 +190,7 @@ public sealed class FakeEngine : IEngine
 
     public bool TryGetLiveState(DeviceId device, out InputState raw, out XboxState mapped)
     {
-        mapped = default;
+        mapped = Mapped.GetValueOrDefault(device);
         return Live.TryGetValue(device, out raw);
     }
 

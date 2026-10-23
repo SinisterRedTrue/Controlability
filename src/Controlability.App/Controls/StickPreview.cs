@@ -24,8 +24,8 @@ public sealed class StickPreview : Canvas
     public static readonly DependencyProperty OuterProperty =
         DependencyProperty.Register(nameof(Outer), typeof(double), typeof(StickPreview), new PropertyMetadata(0.98, OnZoneChanged));
 
-    private const double Size = 140;
-    private const double Radius = 66;
+    private const double Size = 180;
+    private const double Radius = 86;
     private const double DotSize = 10;
 
     private readonly Ellipse _well = new() { Width = Radius * 2, Height = Radius * 2, StrokeThickness = 1.5 };
