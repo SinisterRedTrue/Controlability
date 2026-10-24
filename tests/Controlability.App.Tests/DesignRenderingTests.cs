@@ -86,6 +86,7 @@ public sealed class DesignRenderingTests
 
             RenderDevicesReference();
             RenderProfilesReference();
+            RenderSettingsReference();
             VerifyPadBars();
 
             foreach (var theme in new[] { AppTheme.Dark, AppTheme.Light, AppTheme.System })
@@ -164,6 +165,70 @@ public sealed class DesignRenderingTests
             VisualTreeHelper.GetOffset(panel.Children[1]).Y.Should().Be(96);
         }
         finally { app.Shutdown(); }
+    }
+
+    private static void RenderSettingsReference()
+    {
+        WpfAppearance.ApplyTheme(AppTheme.Dark);
+        var engine = new FakeEngine();
+        var store = new FakeProfileEditor();
+        var keyboard = new Profile { Id = "default-keyboard", Name = "Keyboard and mouse default" };
+        keyboard.Keyboard.Keys["Space"] = "A";
+        keyboard.Keyboard.Keys["Ctrl"] = "B";
+        store.Profiles[keyboard.Id] = keyboard;
+        store.Shipped[keyboard.Id] = keyboard;
+        var settings = new Settings { CloseToTray = true, StartWithWindows = true, StartMinimized = false,
+            HidHideEnabled = true, UnhideWhilePaused = false, Language = "en", GracePeriodSeconds = 10 };
+        settings.KeyboardTargetProcesses.Add("game.exe");
+        var saves = 0;
+        var running = new FakeRunningApps("game");
+        var ui = new FakeUiThread();
+        var clock = new FakeClock();
+        using var mapping = new SettingsViewModel(engine, settings, _ => saves++, store, running, ui, clock);
+        var log = new RollingFileLog(Path.Combine(Path.GetTempPath(), "Controlability-settings-" + Guid.NewGuid()));
+        var general = new GeneralSettingsViewModel(engine, settings, _ => saves++, new FakeAutostart { IsEnabled = true },
+            new FakeAppearance(), log, new DiagnosticsService(engine, new FakeDriverProbe(), settings, log, new FakeClipboard()),
+            new FakeDialogs(), new FakeUrlLauncher(), new FakeUninstaller(), new FakeShell());
+        var page = new SettingsPage(mapping, general);
+        foreach (var size in new[] { new Size(909, 1365), new Size(1080, 720), new Size(640, 480) })
+        {
+            Render(page, size);
+            var scroll = (ScrollViewer)page.FindName("SettingsScroll");
+            scroll.ScrollToTop();
+            Render(page, size);
+            scroll.ScrollableWidth.Should().Be(0, "Settings must not clip horizontally");
+            if (size.Width == 909)
+                scroll.ScrollableHeight.Should().BeLessThanOrEqualTo(1, "the collapsed overview must fit the reference's full page size");
+            ((ItemsControl)page.FindName("KeyboardRows")).Items.Count.Should().Be(2);
+            ((ItemsControl)page.FindName("ReferenceRows")).Items.Count.Should().Be(2);
+            if (Environment.GetEnvironmentVariable("CONTROLABILITY_RENDER_DIR") is { Length: > 0 } directory)
+            {
+                Directory.CreateDirectory(directory);
+                var bitmap = new RenderTargetBitmap((int)size.Width, (int)size.Height, 96, 96, PixelFormats.Pbgra32);
+                bitmap.Render(page);
+                var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(bitmap));
+                using var stream = File.Create(Path.Combine(directory, $"Settings-reference-{size.Width}.png"));
+                encoder.Save(stream);
+                File.WriteAllText(Path.Combine(directory, $"Settings-layout-{size.Width}.txt"),
+                    $"Scroll height: {scroll.ScrollableHeight}\n" + string.Join("\n", Enumerable.Range(0, 9).Select(i =>
+                    {
+                        var card = (FrameworkElement)page.FindName($"SettingsSection{i}");
+                        return $"{i}: {card.ActualWidth} x {card.ActualHeight} at {card.TransformToAncestor(page).Transform(new Point())}";
+                    })));
+            }
+        }
+        var fullMappings = (Button)page.FindName("ShowMappingsButton");
+        fullMappings.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        Render(page, new Size(909, 1365));
+        ((ItemsControl)page.FindName("KeyboardRows")).Items.Count.Should().Be(mapping.KeyRows.Count);
+        fullMappings.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        ((Button)page.FindName("ShowReferenceButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        Render(page, new Size(909, 1365));
+        ((ItemsControl)page.FindName("ReferenceRows")).Items.Count.Should().Be(mapping.ControllerRows.Count);
+        ((Button)page.FindName("ShowLicencesButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        Render(page, new Size(909, 1365));
+        ((StackPanel)page.FindName("LicencesPanel")).Visibility.Should().Be(Visibility.Visible);
+        saves.Should().Be(0, "rendering and expanding Settings must not change stored settings");
     }
 
     private static void RenderProfilesReference()

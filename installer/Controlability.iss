@@ -1,7 +1,7 @@
 ; Controlability installer (Inno Setup 6.3 or newer).
 ;
 ; Normally built by build-release.ps1, which passes:
-;   /DAppVersion=1.1.0  /DAppFileVersion=1.1.0.0  /DPublishDir=<abs path to artifacts\publish>  /DOutputDir=<abs path to artifacts>
+;   /DAppVersion=1.1.1  /DAppFileVersion=1.1.1.0  /DPublishDir=<abs path to artifacts\publish>  /DOutputDir=<abs path to artifacts>
 ;
 ; Drivers (ViGEmBus is BSD-3-Clause, HidHide is MIT; both allow redistribution):
 ;   * If the official installers are in installer\redist\ under the exact names below, they are bundled.
@@ -13,10 +13,10 @@
 #endif
 
 #ifndef AppVersion
-  #define AppVersion "1.1.0"
+  #define AppVersion "1.1.1"
 #endif
 #ifndef AppFileVersion
-  #define AppFileVersion "1.1.0.0"
+  #define AppFileVersion "1.1.1.0"
 #endif
 #ifndef PublishDir
   #define PublishDir "..\artifacts\publish"

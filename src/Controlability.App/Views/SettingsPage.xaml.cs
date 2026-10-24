@@ -2,6 +2,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Data;
+using System.Globalization;
+using Controlability.App.Resources;
 using Controlability.App.ViewModels;
 using Controlability.Core.Keyboard;
 
@@ -10,6 +13,8 @@ namespace Controlability.App.Views;
 public partial class SettingsPage : Page
 {
     private readonly SettingsViewModel _viewModel;
+    private bool _showAllMappings;
+    private bool _showFullReference;
 
     public SettingsPage(SettingsViewModel viewModel, GeneralSettingsViewModel general)
     {
@@ -24,11 +29,44 @@ public partial class SettingsPage : Page
         };
     }
 
-    /// <summary>While a key is being captured, the next key press becomes the binding.</summary>
+    private void OnKeyboardPreviewFilter(object sender, FilterEventArgs e)
+        => e.Accepted = e.Item is KeyBindingRow { Control: KeyboardControl.A or KeyboardControl.B };
+
+    private void OnControllerPreviewFilter(object sender, FilterEventArgs e)
+        => e.Accepted = e.Item is ControllerRow { Label: "A" or "B" };
+
+    private void OnShowMappingsClick(object sender, RoutedEventArgs e)
+    {
+        _showAllMappings = !_showAllMappings;
+        KeyboardRows.ItemsSource = _showAllMappings ? _viewModel.KeyRows : ((CollectionViewSource)Resources["KeyboardPreviewRows"]).View;
+        KeyboardPreview.Header = _showAllMappings ? "All keyboard mappings (Xbox)" : "Mapping preview (Xbox)";
+        KeyboardPreview.IsExpanded = true;
+        ShowMappingsButton.Content = _showAllMappings ? "Show preview" : "View all mappings";
+    }
+
+    private void OnShowReferenceClick(object sender, RoutedEventArgs e)
+    {
+        _showFullReference = !_showFullReference;
+        ReferenceRows.ItemsSource = _showFullReference ? _viewModel.ControllerRows : ((CollectionViewSource)Resources["ControllerPreviewRows"]).View;
+        ControllerPreview.Header = _showFullReference ? "Full controller mapping" : "Controller mapping preview";
+        ControllerPreview.IsExpanded = true;
+        ShowReferenceButton.Content = _showFullReference ? "Show preview" : "View full reference";
+    }
+
+    private void OnShowLicencesClick(object sender, RoutedEventArgs e)
+    {
+        var expanded = LicencesPanel.Visibility != Visibility.Visible;
+        LicencesPanel.Visibility = expanded ? Visibility.Visible : Visibility.Collapsed;
+        ShowLicencesButton.Content = expanded ? "Close" : "Open";
+    }
+
+    /// <summary>Navigate within Settings without changing application state.</summary>
     private void OnSectionClick(object sender, RoutedEventArgs e)
     {
         if (sender is Button { Tag: string name } && FindName(name) is FrameworkElement section)
         {
+            foreach (Button item in SettingsIndex.Children)
+                Selector.SetIsSelected(item, ReferenceEquals(item, sender));
             if (SettingsScroll.Content is System.Windows.Media.Visual content)
             {
                 var position = section.TransformToAncestor(content).Transform(new Point());
@@ -105,4 +143,23 @@ public partial class SettingsPage : Page
 
         return false;
     }
+}
+
+/// <summary>Display-only labels for the Settings overview; stored choices and mappings stay unchanged.</summary>
+public sealed class SettingsDisplayConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        var label = value?.ToString() ?? "";
+        return parameter?.ToString() switch
+        {
+            "Choice" when label == Strings.ThemeSystem || label == Strings.LanguageSystem => "System",
+            "Physical" => label switch { "Cross" => "Cross (×)", "Circle" => "Circle (○)", "Square" => "Square (□)", "Triangle" => "Triangle (△)", _ => label },
+            "Header" when label.Contains("Cross", StringComparison.Ordinal) => "Physical controller (PlayStation)",
+            "Header" => "Physical controller",
+            "Uninstall" => value is true ? Strings.UninstallHint : Strings.UninstallUnavailable,
+            _ => label,
+        };
+    }
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => Binding.DoNothing;
 }
